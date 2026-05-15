@@ -1,0 +1,134 @@
+.onboarding-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+.onboarding-image-section {
+  flex: 1.5;
+  position: relative;
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, #10b981, #047857); /* Fallback for offline mode */
+}
+
+.onboarding-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.onboarding-gradient-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), rgba(0,0,0,0.2) 40%, transparent);
+}
+
+.onboarding-content-section {
+  flex: 1;
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+  background: var(--color-bg);
+  z-index: 10;
+}
+
+.onboarding-indicators {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.indicator.active {
+  width: 24px;
+  border-radius: 4px;
+  background: var(--color-primary);
+}
+
+.onboarding-text-wrap {
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.onboarding-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--color-text);
+  margin-bottom: 0.75rem;
+  line-height: 1.2;
+}
+
+.onboarding-desc {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.onboarding-actions {
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.onboarding-btn {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-large-primary {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-large-primary:active {
+  transform: scale(0.98);
+}
+
+/* For larger screens (though designed for mobile/capacitor) */
+@media (min-width: 768px) {
+  .onboarding-container {
+    flex-direction: row;
+  }
+  .onboarding-image-section {
+    flex: 1;
+    border-radius: 0;
+  }
+  .onboarding-content-section {
+    flex: 1;
+    justify-content: center;
+    padding: 4rem;
+  }
+  .onboarding-title {
+    font-size: 2.5rem;
+  }
+  .onboarding-actions {
+    max-width: 300px;
+  }
+}

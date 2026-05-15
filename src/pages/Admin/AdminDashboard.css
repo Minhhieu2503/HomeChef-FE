@@ -1,0 +1,248 @@
+.admin-dashboard-pro {
+  display: flex;
+  gap: 2rem;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.admin-main-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* --- STATS CARDS --- */
+.stats-row-pro {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+}
+
+.stat-card-pro {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-box.user { background: #ecfdf5; color: #10b981; }
+.icon-box.recipe { background: #fef2f2; color: #ef4444; }
+.icon-box.today { background: #eff6ff; color: #3b82f6; }
+.icon-box.system { background: #fdf4ff; color: #d946ef; }
+
+.stat-info .label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.value-row .value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.badge {
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.badge.positive { background: #dcfce7; color: #10b981; }
+
+/* --- CHARTS --- */
+.analytics-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+  border: 1px solid #f1f5f9;
+}
+
+.card-header {
+  margin-bottom: 2rem;
+}
+
+.card-header h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.card-header .subtitle {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+/* --- ACTIVITY TABLE --- */
+.activity-card-pro {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 20px;
+  border: 1px solid #f1f5f9;
+}
+
+.activity-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.activity-table th {
+  text-align: left;
+  padding: 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: #94a3b8;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.activity-table td {
+  padding: 1.2rem 1rem;
+  font-size: 0.9rem;
+  color: #475569;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.activity-table .time {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+/* --- RIGHT SIDEBAR --- */
+.admin-right-sidebar {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sidebar-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 20px;
+  border: 1px solid #f1f5f9;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  color: #0f172a;
+}
+
+.recipe-rank-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.recipe-rank-item:last-child { border: none; }
+
+.rank-info .recipe-name {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #1e293b;
+}
+
+.rank-info .recipe-stats {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.trend-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.trend-badge.up { color: #10b981; }
+.trend-badge.down { color: #ef4444; }
+
+/* --- INSIGHTS WIDGET --- */
+.insights-widget-pro {
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.insights-widget-pro::before {
+  content: '';
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100px;
+  height: 100px;
+  background: #10b981;
+  filter: blur(60px);
+  opacity: 0.3;
+}
+
+.widget-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.sparkle-icon { color: #10b981; }
+
+.insights-widget-pro h4 {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.insights-widget-pro p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+.btn-insight {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: #10b981;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-insight:hover {
+  transform: translateY(-2px);
+}

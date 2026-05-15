@@ -1,0 +1,21 @@
+/* Register Page uses the same layout as Login Page */
+@import "../Login/Login.css";
+
+/* Specific overrides if needed */
+.signup-text {
+  margin-top: 2rem;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
+.signup-text a {
+  color: var(--color-primary);
+  font-weight: 700;
+  text-decoration: none;
+  margin-left: 0.5rem;
+}
+
+.signup-text a:hover {
+  text-decoration: underline;
+}
