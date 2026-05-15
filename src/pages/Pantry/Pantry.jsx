@@ -123,26 +123,68 @@ function Pantry() {
       const recipesRes = await getAllRecipes();
       const allRecipes = recipesRes?.recipes || (Array.isArray(recipesRes) ? recipesRes : []);
 
-      // 3. Smart Matching Logic
+      // 3. Smart Vietnamese-aware Matching Logic
       if (items.length > 0 && allRecipes.length > 0) {
         const pantryNames = items.map(i => i.name.toLowerCase().trim());
 
+        // Hàm chuẩn hóa tên nguyên liệu tiếng Việt
+        const normalizeVI = (name) => {
+          const removeWords = ["tươi", "khô", "non", "chín", "sạch", "thái", "băm", "cắt", "xay", "hoặc", "và"];
+          let n = name.toLowerCase().trim();
+          const parts = n.split(/[,\/]/).map(p => p.trim()).filter(p => p.length > 0);
+          return parts.map(part => {
+            removeWords.forEach(w => { part = part.replace(new RegExp(`\\b${w}\\b`, 'gi'), '').trim(); });
+            return part.replace(/\s+/g, ' ').trim();
+          }).filter(p => p.length > 1);
+        };
+
+        // Fuzzy matching cho tiếng Việt
+        const isMatch = (pantryName, recipeName) => {
+          const pParts = normalizeVI(pantryName);
+          const rParts = normalizeVI(recipeName);
+          for (const p of pParts) {
+            for (const r of rParts) {
+              if (p === r || p.includes(r) || r.includes(p)) return true;
+              const pWords = p.split(' ');
+              const rWords = r.split(' ');
+              const common = pWords.filter(w => rWords.includes(w));
+              if (common.length >= 1 && common.length / Math.max(pWords.length, rWords.length) >= 0.5) return true;
+            }
+          }
+          return false;
+        };
+
         const scoredRecipes = allRecipes.map(recipe => {
-          // Flatten recipe ingredients for easy matching
-          const recipeIngredients = recipe.ingredients.map(ri => ri.name.toLowerCase());
+          const recipeIngredients = recipe.ingredients || [];
+          const matchedIngredients = [];
+          const missingIngredients = [];
 
-          // Find which pantry items are in this recipe (more flexible matching)
-          const matches = pantryNames.filter(pn =>
-            recipeIngredients.some(ri => ri.includes(pn) || pn.includes(ri))
-          );
+          recipeIngredients.forEach(ri => {
+            const found = pantryNames.some(pn => isMatch(pn, ri.name));
+            if (found) matchedIngredients.push(ri.name);
+            else missingIngredients.push(ri.name);
+          });
 
-          return { ...recipe, matches, matchCount: matches.length };
+          const matchPercentage = recipeIngredients.length > 0
+            ? Math.round((matchedIngredients.length / recipeIngredients.length) * 100)
+            : 0;
+
+          return {
+            ...recipe,
+            matches: matchedIngredients,
+            missingIngredients,
+            matchCount: matchedIngredients.length,
+            matchPercentage
+          };
         });
 
-        // Sort by most matches first, then pick top 8
+        // Sort by percentage then count, take top 8
         const topMatches = scoredRecipes
           .filter(r => r.matchCount > 0)
-          .sort((a, b) => b.matchCount - a.matchCount)
+          .sort((a, b) => {
+            if (b.matchPercentage !== a.matchPercentage) return b.matchPercentage - a.matchPercentage;
+            return b.matchCount - a.matchCount;
+          })
           .slice(0, 8);
 
         setRescueRecipes(topMatches.length > 0 ? topMatches : allRecipes.slice(0, 8));
@@ -155,6 +197,7 @@ function Pantry() {
       setLoading(false);
     }
   };
+
 
   const calculateStats = () => {
     const totalItems = ingredients.length;
@@ -337,17 +380,36 @@ function Pantry() {
               <Zap size={20} className="text-orange-500" />
               Giải cứu nguyên liệu
             </h3>
+            <p className="rescue-subtitle">Gợi ý món ăn phù hợp với nguyên liệu bạn đang có</p>
             <div className="rescue-grid">
               {rescueRecipes.map(recipe => (
                 <Link to={`/recipes/${recipe._id}`} key={recipe._id} className="rescue-card">
-                  <img src={recipe.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"} alt={recipe.title} />
+                  <div className="rescue-image-wrapper">
+                    <img src={recipe.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"} alt={recipe.title} />
+                    {recipe.matchPercentage > 0 && (
+                      <span className={`match-badge ${recipe.matchPercentage >= 75 ? 'high' : recipe.matchPercentage >= 50 ? 'medium' : 'low'}`}>
+                        {recipe.matchPercentage}% khớp
+                      </span>
+                    )}
+                  </div>
                   <h5 translate="no">{recipe.title}</h5>
-                  <div className="flex justify-between items-center mt-auto">
-                    <span className="text-xs text-muted">
-                      Sử dụng: {recipe.matches && recipe.matches.length > 0
-                        ? recipe.matches.map(m => m.charAt(0).toUpperCase() + m.slice(1)).join(", ")
+                  <div className="rescue-card-info">
+                    <span className="matched-info">
+                      ✅ Có: {recipe.matches && recipe.matches.length > 0
+                        ? recipe.matches.slice(0, 3).join(", ") + (recipe.matches.length > 3 ? ` +${recipe.matches.length - 3}` : "")
                         : "Nguyên liệu sẵn có"}
                     </span>
+                    {recipe.missingIngredients && recipe.missingIngredients.length > 0 && (
+                      <span className="missing-info">
+                        🛒 Thiếu: {recipe.missingIngredients.length} nguyên liệu
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex justify-between items-center mt-auto">
+                    <div className="recipe-meta-mini">
+                      {recipe.cookTime && <span><Clock size={12} /> {recipe.cookTime}p</span>}
+                      {recipe.calories && <span><Flame size={12} /> {recipe.calories} kcal</span>}
+                    </div>
                     <ChevronRight size={16} className="text-primary" />
                   </div>
                 </Link>
@@ -355,6 +417,7 @@ function Pantry() {
             </div>
           </section>
         )}
+
       </main>
 
       {/* Add Item Modal */}
