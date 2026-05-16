@@ -55,20 +55,23 @@ function MealPlanner() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const me = await authService.getMe();
+        const startIso = dates[0].iso;
+        const endIso = dates[dates.length - 1].iso;
+
+        const [me, recipesRes, savedRes, dbPlan] = await Promise.all([
+          authService.getMe(),
+          getAllRecipes(),
+          authService.getSavedRecipes(),
+          getMealPlan(startIso, endIso)
+        ]);
+
         setUser(me.data);
 
-        const recipesRes = await getAllRecipes();
         const recipesArr = Array.isArray(recipesRes) ? recipesRes : (recipesRes?.recipes || []);
         setAllRecipes(recipesArr);
 
-        const savedRes = await authService.getSavedRecipes();
         setSavedRecipes(savedRes.data || []);
 
-        const startIso = dates[0].iso;
-        const endIso = dates[dates.length - 1].iso;
-        const dbPlan = await getMealPlan(startIso, endIso);
-        
         const normalized = {};
         const planData = dbPlan?.data || (Array.isArray(dbPlan) ? dbPlan : []);
         

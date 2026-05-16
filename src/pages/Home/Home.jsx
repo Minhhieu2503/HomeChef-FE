@@ -23,14 +23,17 @@ function Dashboard() {
     const loadDashboardData = async () => {
       try {
         setLoading(true);
-        const profileRes = await authService.getMe();
+        const [profileRes, recipesData, overviewData] = await Promise.all([
+          authService.getMe(),
+          getAllRecipes(),
+          getDashboardOverview()
+        ]);
+
         if (profileRes.success) setUser(profileRes.data);
 
-        const recipesData = await getAllRecipes();
         const recipesArray = Array.isArray(recipesData) ? recipesData : (recipesData?.recipes || []);
         setAllRecipes(recipesArray);
 
-        const overviewData = await getDashboardOverview();
         if (overviewData.success) {
           setOverview(overviewData.data);
         }

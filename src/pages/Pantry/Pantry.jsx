@@ -114,13 +114,15 @@ function Pantry() {
     try {
       setLoading(true);
 
-      // 1. Get Pantry Items
-      const pantryRes = await getPantryItems("All");
+      // Fetch both simultaneously
+      const [pantryRes, recipesRes] = await Promise.all([
+        getPantryItems("All"),
+        getAllRecipes()
+      ]);
+
       const items = Array.isArray(pantryRes.data || pantryRes) ? (pantryRes.data || pantryRes) : [];
       setIngredients(items);
 
-      // 2. Get All Recipes
-      const recipesRes = await getAllRecipes();
       const allRecipes = recipesRes?.recipes || (Array.isArray(recipesRes) ? recipesRes : []);
 
       // 3. Smart Matching Logic
