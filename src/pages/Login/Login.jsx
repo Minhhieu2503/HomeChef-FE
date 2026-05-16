@@ -4,6 +4,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { Capacitor } from "@capacitor/core";
 import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
 import { authService } from "../../services/auth.service";
+import api from "../../services/api";
 import { authUtils } from "../../utils/authUtils";
 import { useToast } from "../../context/ToastContext";
 import { LogIn, Mail, Lock, ChefHat, ArrowRight, Eye, EyeOff } from "lucide-react";
@@ -47,7 +48,7 @@ function Login() {
         }
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || error.message || "Đăng nhập thất bại");
+      toast.error(error.response?.data?.message || `Lỗi mạng (Thử kết nối tới: ${api.defaults.baseURL})`);
     } finally {
       setLoading(false);
     }
@@ -175,7 +176,7 @@ function Login() {
             <button type="submit" className="btn-login-premium" disabled={loading}>
               {loading ? "Đang xử lý..." : (
                 <>
-                  <span>BẮT ĐẦU NẤU ĂN</span>
+                  <span>BẮT ĐẦU NẤU ĂN (Local)</span>
                   <ArrowRight size={18} />
                 </>
               )}
