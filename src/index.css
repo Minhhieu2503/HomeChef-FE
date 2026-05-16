@@ -128,7 +128,7 @@ body {
 }
 
 /* ============ Responsive Media Queries ============ */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .app-layout {
     flex-direction: column;
   }
@@ -411,7 +411,7 @@ img { max-width: 100%; display: block; }
   border: 2px solid #059669;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .premium-header {
     margin: -1.25rem -1rem 0;
     padding: 1.25rem 1.25rem 2.5rem;

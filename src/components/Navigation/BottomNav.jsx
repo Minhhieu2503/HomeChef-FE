@@ -11,7 +11,7 @@ function BottomNav() {
       </NavLink>
       <NavLink to="/meal-planner" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
         <Calendar size={22} strokeWidth={2.5} />
-        <span>Lịch ăn</span>
+        <span>Kế hoạch</span>
       </NavLink>
       <NavLink to="/recipes" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
         <Compass size={22} strokeWidth={2.5} />

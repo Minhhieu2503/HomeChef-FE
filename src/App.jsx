@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import Sidebar from "./components/Sidebar/Sidebar";
@@ -35,12 +35,10 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  // User is logged in, ensure onboarding flag is set
   if (!hasSeenOnboarding) {
     localStorage.setItem("hasSeenOnboarding", "true");
   }
 
-  // If Admin tries to access consumer routes, send them to admin panel
   if (isAdmin) {
     return <Navigate to="/admin" replace />;
   }
@@ -48,33 +46,35 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
-// Admin Route Component
 const AdminRoute = ({ children }) => {
   const isAdmin = authUtils.isAdmin();
-
   if (!isAdmin) {
     return <Navigate to="/" replace />;
   }
-
   return children;
 };
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
 
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot" element={<ForgotPassword />} />
 
-        {/* Admin Routes (Standalone Layout) */}
         <Route 
           path="/admin/*" 
           element={
@@ -84,23 +84,22 @@ function App() {
           } 
         />
 
-        {/* Protected Consumer Routes inside App Layout */}
         <Route
           path="/*"
           element={
             <ProtectedRoute>
-              <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
-                {/* Mobile Top Header */}
-                <TopHeader />
+              <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : ''} ${isMobile ? 'is-mobile' : 'is-desktop'}`}>
+                {/* Only show mobile header on mobile devices */}
+                {isMobile && <TopHeader />}
 
                 {/* Sidebar Overlay */}
                 {isSidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar}></div>}
 
-                <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
+                {/* Only show sidebar on desktop or if specifically opened on mobile */}
+                {(!isMobile || isSidebarOpen) && <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />}
                 
                 <main className="main-content">
                   <Routes>
-                    {/* ... (keep existing routes) */}
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/meal-planner" element={<MealPlanner />} />
                     <Route path="/recipes" element={<Recipes />} />
@@ -114,8 +113,8 @@ function App() {
                   </Routes>
                 </main>
 
-                {/* Mobile Bottom Navigation */}
-                <BottomNav />
+                {/* Only show bottom nav on mobile */}
+                {isMobile && <BottomNav />}
               </div>
             </ProtectedRoute>
           }
