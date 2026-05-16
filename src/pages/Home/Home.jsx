@@ -18,18 +18,14 @@ import {
 } from "lucide-react";
 import "./Home.css";
 
-function Home() {
+function Home({ isMobile }) {
   const navigate = useNavigate();
   const [recipes, setRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [activeFilter, setActiveFilter] = useState("All");
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
-    window.addEventListener("resize", handleResize);
-    
     const fetchData = async () => {
       try {
         const [recipesRes, userRes] = await Promise.all([
@@ -45,8 +41,6 @@ function Home() {
       }
     };
     fetchData();
-    
-    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const filters = [

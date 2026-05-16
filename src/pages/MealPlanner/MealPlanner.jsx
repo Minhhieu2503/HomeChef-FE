@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import "./MealPlanner.css";
 
-function MealPlanner() {
+function MealPlanner({ isMobile }) {
   const toast = useToast();
   const navigate = useNavigate();
   const [plannedMeals, setPlannedMeals] = useState({});
@@ -30,7 +30,6 @@ function MealPlanner() {
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState(new Date().getDay() || 7);
   const [user, setUser] = useState(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
   // Constants
   const slots = ["breakfast", "lunch", "dinner"];
