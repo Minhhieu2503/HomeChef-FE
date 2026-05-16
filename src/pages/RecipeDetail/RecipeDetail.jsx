@@ -98,19 +98,28 @@ function RecipeDetail() {
           <p className="text-muted">{recipe.description || "Mô tả món ngon đặc biệt từ HomeChef"}</p>
         </div>
 
-        {/* Modernist Stats Widget Grid */}
+        {/* modernist Stats Widget Grid */}
         <div className="modern-stats-bar">
-          <div className="stat-box">
-            <span className="s-icon">⏱️</span>
-            <span className="s-val">{recipe.cookTime || 20} phút</span>
+          <div className="stat-card">
+            <Clock size={20} className="text-primary" />
+            <div className="stat-info">
+              <span className="s-val">{recipe.cookTime || 20}m</span>
+              <span className="s-lbl">Thời gian</span>
+            </div>
           </div>
-          <div className="stat-box">
-            <span className="s-icon">📊</span>
-            <span className="s-val">{recipe.difficulty || "Vừa"}</span>
+          <div className="stat-card">
+            <Star size={20} className="text-yellow-500" />
+            <div className="stat-info">
+              <span className="s-val">{recipe.difficulty || "Vừa"}</span>
+              <span className="s-lbl">Độ khó</span>
+            </div>
           </div>
-          <div className="stat-box">
-            <span className="s-icon">🔥</span>
-            <span className="s-val">{recipe.calories || 0} kcal</span>
+          <div className="stat-card">
+            <Flame size={20} className="text-orange-500" />
+            <div className="stat-info">
+              <span className="s-val">{recipe.calories || 0}</span>
+              <span className="s-lbl">Kcal</span>
+            </div>
           </div>
         </div>
 
@@ -126,14 +135,17 @@ function RecipeDetail() {
         <hr className="divider" />
 
         {/* WIDGET: Hands-free Cooking Mode */}
-        <div className="hands-free-widget">
-          <div className="hf-info">
-            <h4>🗣️ Chế độ rảnh tay (Beta)</h4>
-            <span className="text-xs">Phóng to chữ & điều khiển bằng giọng nói</span>
+        <div className="hands-free-card">
+          <div className="hf-content">
+            <div className="hf-icon">🗣️</div>
+            <div className="hf-text">
+              <h4>Hands-free Cooking</h4>
+              <p>Điều khiển bằng giọng nói (Beta)</p>
+            </div>
           </div>
-          <label className="switch">
+          <label className="hf-switch">
             <input type="checkbox" checked={handsFree} onChange={() => setHandsFree(!handsFree)} />
-            <span className="slider round"></span>
+            <span className="hf-slider"></span>
           </label>
         </div>
 
@@ -142,18 +154,20 @@ function RecipeDetail() {
           <div className="section-h">
             <h3>Nguyên liệu cần chuẩn bị ({recipe.ingredients?.length})</h3>
           </div>
-          <ul className="large-checks-list">
+          <div className="ingredients-grid-v3">
             {(recipe.ingredients || []).map((ing, i) => (
-              <li className="check-item" key={i}>
-                <label className="big-checkbox-label">
+              <div className="ing-item-v3" key={i}>
+                <label className="ing-checkbox">
                   <input type="checkbox" />
-                  <span className="custom-check"></span>
-                  <span className="ing-name">{ing.name}</span>
+                  <span className="ing-check-mark"></span>
+                  <div className="ing-details">
+                    <span className="ing-name-text">{ing.name}</span>
+                    <span className="ing-qty-text">{ing.quantity || ing.qty} {ing.unit}</span>
+                  </div>
                 </label>
-                <span className="ing-qty">{ing.quantity || ing.qty} {ing.unit}</span>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
           <button className="btn btn-outline-secondary w-full" style={{marginTop: '1rem'}}>
             🛒 Thêm nguyên liệu thiếu vào giỏ
           </button>
@@ -203,19 +217,16 @@ function RecipeDetail() {
         </div>
       </div>
 
-      {/* FLOATING BOTTOM BAR: Serving Adjust & Start Button */}
+      {/* FIXED BOTTOM BAR */}
       {!isCooking && (
-        <div className="floating-bottom-actions">
-          <div className="servings-selector">
-            <button className="adj-btn" onClick={() => setServings(Math.max(1, servings-1))}>−</button>
-            <div className="serving-count">
-              <span className="num">{servings}</span>
-              <span className="lbl">người</span>
-            </div>
-            <button className="adj-btn" onClick={() => setServings(servings+1)}>+</button>
+        <div className="fixed-footer-actions">
+          <div className="servings-control">
+            <button onClick={() => setServings(Math.max(1, servings-1))}>−</button>
+            <span className="serving-value">{servings} p</span>
+            <button onClick={() => setServings(servings+1)}>+</button>
           </div>
-          <button className="btn btn-sunset flex-1" onClick={() => setIsCooking(true)}>
-            Bắt đầu nấu
+          <button className="btn-primary-v3" onClick={() => setIsCooking(true)}>
+            Start Cooking
           </button>
         </div>
       )}

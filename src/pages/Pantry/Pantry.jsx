@@ -297,19 +297,41 @@ function Pantry() {
   };
 
   return (
-    <div className="pantry-container">
-      {/* Inventory Main Content */}
+    <div className="pantry-v2-container">
+      {/* 1. Fridge Pulse Grid */}
+      <section className="fridge-pulse-section">
+        <h3>Fridge Pulse</h3>
+        <div className="pulse-grid">
+          {[
+            { label: "Produce", key: "Vegetable", color: "#10b981" },
+            { label: "Dairy", key: "Dairy", color: "#6366f1" },
+            { label: "Protein", key: "Meat", color: "#f43f5e" },
+            { label: "Grains", key: "Other", color: "#f59e0b" }
+          ].map(cat => {
+            const count = ingredients.filter(i => i.category === cat.key).length;
+            const fill = Math.min((count / 5) * 100, 100);
+            return (
+              <div key={cat.label} className="pulse-card">
+                <div className="pulse-label">
+                  <span>{cat.label}</span>
+                  <span className="count">{count}</span>
+                </div>
+                <div className="pulse-bar-bg">
+                  <div className="pulse-bar-fill" style={{ width: `${fill}%`, background: cat.color }}></div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 2. Inventory Main Content */}
       <main className="inventory-main">
         <div className="inventory-header">
-          <h2 translate="no">Tủ đựng thức ăn của tôi</h2>
+          <h3 translate="no">My Pantry</h3>
           <div className="header-actions">
-            <button className="btn-scan-fridge" onClick={() => setIsScanModalOpen(true)}>
+            <button className="btn-scan-fridge-compact" onClick={() => setIsScanModalOpen(true)}>
               <Camera size={18} />
-              <span>Quét Tủ Lạnh / Hóa Đơn</span>
-              <Sparkles size={14} className="scan-sparkle" />
-            </button>
-            <button className="btn-view-plan flex items-center gap-2" onClick={() => setIsModalOpen(true)}>
-              <Plus size={18} /> Thêm mục
             </button>
           </div>
         </div>
@@ -320,45 +342,33 @@ function Pantry() {
           ) : (
             ingredients.length > 0 ? (
               ingredients.map(item => {
-                // Real freshness calculation
-                let daysLeft = 7; // Default
+                let daysLeft = 7;
                 if (item.expiryDate) {
                   const diffTime = new Date(item.expiryDate) - new Date();
                   daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 }
                 const color = getFreshnessColor(daysLeft);
-                const displayName = item.name && item.name.length > 1 ? item.name : "Nguyên liệu mới";
+                const fillPercent = Math.max(0, Math.min(daysLeft * 10, 100));
 
                 return (
-                  <div key={item._id} className="horizontal-ingredient-card">
-                    <div className="ingredient-icon">{item.emoji || "📦"}</div>
-                    <div className="ingredient-info-main">
-                      <div className="info-top">
-                        <h4 translate="no">{displayName}</h4>
-                        <span className="date-in">Nhập: {new Date(item.createdAt || Date.now()).toLocaleDateString('vi-VN')}</span>
-                      </div>
-                      <div className="freshness-tracker">
-                        <div className="freshness-bar-container">
-                          <div
-                            className="freshness-bar-fill"
-                            style={{ width: `${Math.min(daysLeft * 10, 100)}%`, backgroundColor: color }}
-                          ></div>
+                  <div key={item._id} className="horizontal-ingredient-card-v2">
+                    <div className="card-left">
+                      <span className="item-emoji">{item.emoji || "📦"}</span>
+                      <div className="item-info">
+                        <h4 translate="no">{item.name}</h4>
+                        <div className="freshness-bar-v2">
+                          <div className="bar-bg">
+                            <div className="bar-fill" style={{ width: `${fillPercent}%`, background: color }}></div>
+                          </div>
+                          <span className="days-text" style={{ color }}>{daysLeft} days left</span>
                         </div>
-                        <span className="freshness-text" style={{ color }}>{daysLeft} ngày nữa</span>
                       </div>
                     </div>
-                    <div className="card-actions">
-                      <div className="quantity-badge">
-                        <span className="font-bold text-lg">{item.quantity}</span>
-                        <span className="text-xs text-muted block">{item.unit || "đv"}</span>
-                      </div>
-                      <div className="action-buttons">
-                        <button className="action-btn edit" title="Sửa" onClick={() => handleEditClick(item)}>
-                          <Edit2 size={16} />
-                        </button>
-                        <button className="action-btn delete" title="Xóa" onClick={() => handleDeleteClick(item)}>
-                          <Trash2 size={16} />
-                        </button>
+                    <div className="card-right">
+                      <span className="qty-text">{item.quantity}{item.unit}</span>
+                      <div className="item-actions">
+                        <button className="btn-action-mini" onClick={() => handleEditClick(item)}><Edit2 size={14} /></button>
+                        <button className="btn-action-mini delete" onClick={() => handleDeleteClick(item)}><Trash2 size={14} /></button>
                       </div>
                     </div>
                   </div>
@@ -372,6 +382,11 @@ function Pantry() {
             )
           )}
         </div>
+
+        {/* Floating Action Button */}
+        <button className="fab-add-pantry" onClick={() => setIsModalOpen(true)}>
+          <Plus size={28} />
+        </button>
 
         {/* 3. Rescue Recipes */}
         {ingredients.length > 0 && (

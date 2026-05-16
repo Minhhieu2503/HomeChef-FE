@@ -2,6 +2,8 @@ import { useState } from "react";
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import Sidebar from "./components/Sidebar/Sidebar";
+import TopHeader from "./components/Navigation/TopHeader";
+import BottomNav from "./components/Navigation/BottomNav";
 import Dashboard from "./pages/Home/Home";
 import MealPlanner from "./pages/MealPlanner/MealPlanner";
 import Recipes from "./pages/Recipes/Recipes";
@@ -88,24 +90,17 @@ function App() {
           element={
             <ProtectedRoute>
               <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
-                {/* Mobile Header - Only visible on small screens */}
-                <header className="mobile-header">
-                  <button className="menu-toggle" onClick={toggleSidebar}>
-                    <Menu size={24} />
-                  </button>
-                  <div className="mobile-brand">
-                    <span>🍳 HomeChef</span>
-                  </div>
-                  <div style={{ width: 40 }}></div>
-                </header>
+                {/* Mobile Top Header */}
+                <TopHeader />
 
-                {/* Overlay to close sidebar on click */}
+                {/* Sidebar Overlay */}
                 {isSidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar}></div>}
 
                 <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
                 
                 <main className="main-content">
                   <Routes>
+                    {/* ... (keep existing routes) */}
                     <Route path="/" element={<Dashboard />} />
                     <Route path="/meal-planner" element={<MealPlanner />} />
                     <Route path="/recipes" element={<Recipes />} />
@@ -118,6 +113,9 @@ function App() {
                     <Route path="/payment-result" element={<PaymentResult />} />
                   </Routes>
                 </main>
+
+                {/* Mobile Bottom Navigation */}
+                <BottomNav />
               </div>
             </ProtectedRoute>
           }
