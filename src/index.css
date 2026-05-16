@@ -136,7 +136,7 @@ body {
   .main-content {
     margin-left: 0;
     max-width: 100vw;
-    padding: 1.25rem 1rem 6rem; /* extra bottom padding for the nav bar */
+    padding: 1.25rem 1rem 2rem;
   }
   
   h1 { font-size: 1.5rem; }
