@@ -1,342 +1,103 @@
-.planner-premium-container {
-  padding: 0;
-  background-color: #f6fcf9; /* Light green tint from reference */
-  min-height: 100vh;
-  padding-bottom: 100px;
-  font-family: 'Inter', -apple-system, sans-serif;
+/* ========================================================================== */
+/*                           MEAL PLANNER CSS V3                              */
+/*      Parallel Support for Mobile (Premium) and Desktop (Classic)           */
+/* ========================================================================== */
+
+/* --- MOBILE VERSION (MAX-WIDTH: 1024PX) --- */
+@media (max-width: 1024px) {
+  .meal-planner-v3.mobile-version {
+    padding: 0;
+    background-color: #f8fafc;
+    min-height: 100vh;
+    padding-bottom: 110px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .planner-header-v3 {
+    display: flex; justify-content: space-between; align-items: center; padding: 1.25rem; background: white;
+  }
+  .planner-header-v3 h2 { font-size: 1.25rem; font-weight: 900; }
+
+  .date-picker-v3 {
+    display: flex; gap: 0.75rem; overflow-x: auto; padding: 1rem 1.25rem; scrollbar-width: none; background: white;
+  }
+  .date-capsule-v3 {
+    min-width: 65px; height: 90px; border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #f8fafc; border: 1.5px solid #f1f5f9; transition: all 0.3s;
+  }
+  .date-capsule-v3.active { background: #10b981; border-color: #10b981; color: white; transform: scale(1.05); }
+
+  .meal-slots-v3 { padding: 1.5rem 1.25rem; display: flex; flex-direction: column; gap: 1.25rem; }
+  .meal-slot-card-v3 {
+    background: white; border-radius: 24px; padding: 1.25rem; box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  }
+
+  .recipe-mini-card-v3 { display: flex; gap: 1rem; margin-top: 1rem; }
+  .recipe-thumb-v3 { width: 70px; height: 70px; border-radius: 16px; object-fit: cover; }
+  .recipe-details-v3 h4 { font-size: 1rem; font-weight: 800; margin-bottom: 4px; }
+  
+  .add-recipe-btn-v3 {
+    width: 100%; padding: 1.25rem; border: 2px dashed #e2e8f0; border-radius: 20px; background: #f8fafc;
+    display: flex; flex-direction: column; align-items: center; gap: 8px; color: #94a3b8; font-weight: 800;
+  }
+
+  .saved-tray-v3 { margin-top: 1.5rem; }
+  .tray-header-v3 { display: flex; justify-content: space-between; padding: 0 1.25rem; align-items: center; }
+  .tray-header-v3 h3 { font-size: 1.1rem; font-weight: 900; }
+  .tray-scroll-v3 { display: flex; gap: 1rem; overflow-x: auto; padding: 1rem 1.25rem; scrollbar-width: none; }
+  .tray-item-v3 {
+    min-width: 140px; background: white; border-radius: 24px; padding: 10px; border: 1px solid #f1f5f9; position: relative;
+  }
+  .tray-item-v3 img { width: 100%; height: 100px; border-radius: 18px; object-fit: cover; }
+  .tray-item-v3 span { display: block; margin-top: 8px; font-weight: 800; font-size: 0.8rem; }
 }
 
-/* --- App Header --- */
-.planner-app-header {
-  padding: 1.5rem 1.25rem 0.5rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* --- DESKTOP VERSION (MIN-WIDTH: 1025PX) --- */
+@media (min-width: 1025px) {
+  .planner-v2-container.desktop-version {
+    padding: 2.5rem 5rem;
+    background: #f8fafc;
+    min-height: 100vh;
+  }
+
+  .planner-header {
+    display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem;
+  }
+  .planner-header h1 { font-size: 2rem; font-weight: 900; }
+
+  .planner-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1.5rem;
+  }
+
+  .grid-column {
+    background: white; border-radius: 20px; border: 1px solid #e2e8f0; overflow: hidden;
+  }
+
+  .column-head {
+    padding: 1.25rem; background: #f8fafc; border-bottom: 1px solid #e2e8f0; text-align: center;
+  }
+  .day-text { display: block; font-weight: 800; color: #1e293b; }
+  .date-text { font-size: 0.8rem; color: #64748b; }
+
+  .column-slots { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+  .slot-item { background: #f8fafc; border-radius: 12px; padding: 0.75rem; border: 1px dashed #cbd5e1; }
+  .slot-name { font-size: 0.65rem; font-weight: 900; color: #94a3b8; display: block; margin-bottom: 6px; }
+
+  .meal-card { background: white; padding: 10px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+  .meal-info h5 { font-size: 0.85rem; font-weight: 800; margin-bottom: 2px; }
+
+  .planner-bottom { margin-top: 3rem; }
+  .summary-widget { background: white; padding: 2rem; border-radius: 24px; border: 1px solid #e2e8f0; max-width: 400px; }
+  .generate-btn { background: #10b981; color: white; border: none; padding: 1rem 1.5rem; border-radius: 14px; font-weight: 800; margin-top: 1.5rem; }
 }
 
-.brand-text {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #2d6a4f; /* HomeChef Green */
-  margin: 0;
+/* --- Shared Modals --- */
+.planner-modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 4000;
+  display: flex; align-items: center; justify-content: center;
 }
-
-.header-icons {
-  display: flex;
-  gap: 1rem;
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  color: #1e293b;
-  cursor: pointer;
-}
-
-/* --- Date Picker Capsules --- */
-.premium-date-picker {
-  display: flex;
-  gap: 0.75rem;
-  overflow-x: auto;
-  padding: 1.5rem 1.25rem;
-  scrollbar-width: none;
-}
-
-.premium-date-picker::-webkit-scrollbar {
-  display: none;
-}
-
-.date-capsule {
-  min-width: 72px;
-  height: 96px;
-  background: white;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  border: 1.5px solid #e2e8f0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-}
-
-.date-capsule.active {
-  background: #52b788; /* Reference Green */
-  color: white;
-  border-color: #52b788;
-  transform: scale(1.05);
-}
-
-.date-capsule.active .day-name, 
-.date-capsule.active .date-num {
-  color: white;
-}
-
-.day-name {
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #475569;
-}
-
-.date-num {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #1e293b;
-}
-
-.has-meal-dot {
-  width: 6px;
-  height: 6px;
-  background: #1b4332;
-  border-radius: 50%;
-  position: absolute;
-  bottom: 12px;
-}
-
-.date-capsule.active .has-meal-dot {
-  background: white;
-}
-
-/* --- Daily View Section --- */
-.daily-view-premium {
-  padding: 0 1.25rem;
-}
-
-.view-section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.view-section-header h3 {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: #1e293b;
-  margin: 0;
-}
-
-.add-custom-btn {
-  background: none;
-  border: none;
-  color: #2d6a4f;
-  font-weight: 800;
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* --- Meal Cards Premium --- */
-.meal-stack-premium {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-}
-
-.meal-card-premium {
-  background: white;
-  border-radius: 20px;
-  border: 1px solid #e2e8f0;
-  overflow: hidden;
-  position: relative;
-}
-
-/* Left Accent Borders */
-.slot-breakfast { border-left: 6px solid #fbbf24; }
-.slot-lunch { border-left: 6px solid #10b981; }
-.slot-dinner { border-left: 6px solid #f97316; }
-
-.meal-card-inner {
-  padding: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-}
-
-.meal-img-container {
-  width: 80px;
-  height: 80px;
-  border-radius: 14px;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.meal-img-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.meal-details {
-  flex: 1;
-}
-
-.slot-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.slot-type {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: #f59e0b; /* Default for breakfast, adjusted via JS or CSS if needed */
-}
-
-.slot-lunch .slot-type { color: #10b981; }
-.slot-dinner .slot-type { color: #f97316; }
-
-.drag-handle {
-  color: #cbd5e1;
-}
-
-.meal-details h4 {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #1e293b;
-  margin: 0 0 6px 0;
-  line-height: 1.2;
-}
-
-.meal-metrics {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #64748b;
-}
-
-.dot {
-  width: 4px;
-  height: 4px;
-  background: #cbd5e1;
-  border-radius: 50%;
-}
-
-.empty-slot-text {
-  font-weight: 700;
-  color: #94a3b8;
-  font-style: italic;
-}
-
-.more-btn {
-  background: none;
-  border: none;
-  color: #64748b;
-  padding: 0.5rem;
-}
-
-/* --- Bottom Sheet Premium --- */
-.saved-sheet-premium {
-  position: fixed;
-  inset: 0;
-  z-index: 2000;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  visibility: hidden;
-  transition: visibility 0.3s;
-}
-
-.saved-sheet-premium.open {
-  visibility: visible;
-}
-
-.sheet-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.3);
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.saved-sheet-premium.open .sheet-backdrop {
-  opacity: 1;
-}
-
-.sheet-content-premium {
-  width: 100%;
-  background: #eef7f2; /* Light green from reference */
-  border-radius: 32px 32px 0 0;
-  padding: 1rem 1.25rem 2.5rem;
-  transform: translateY(100%);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
-}
-
-.saved-sheet-premium.open .sheet-content-premium {
-  transform: translateY(0);
-}
-
-.sheet-handle {
-  width: 40px;
-  height: 4px;
-  background: #cbd5e1;
-  border-radius: 100px;
-  margin: 0 auto 1.25rem;
-}
-
-.sheet-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.25rem;
-}
-
-.sheet-header h4 {
-  font-size: 1.15rem;
-  font-weight: 900;
-  color: #1b4332;
-  margin: 0;
-}
-
-.arrow { color: #1b4332; }
-
-.horizontal-recipe-list {
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding: 0.5rem 0;
-}
-
-.horizontal-recipe-list::-webkit-scrollbar {
-  display: none;
-}
-
-.recipe-bubble-item {
-  min-width: 130px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.recipe-bubble-item img {
-  width: 130px;
-  height: 90px;
-  border-radius: 16px;
-  object-fit: cover;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.recipe-bubble-item span {
-  font-size: 0.85rem;
-  font-weight: 800;
-  color: #1b4332;
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.empty-saved-mini {
-  padding: 2rem;
-  width: 100%;
-  text-align: center;
-  color: #2d6a4f;
-  font-weight: 700;
+.planner-modal-card {
+  background: white; width: 90%; max-width: 800px; height: 80vh; border-radius: 24px; overflow: hidden; display: flex; flex-direction: column;
 }

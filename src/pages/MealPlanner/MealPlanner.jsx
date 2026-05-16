@@ -1,263 +1,252 @@
 import { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { getMealPlans, addMealToPlan, removeMealFromPlan } from "../../services/mealPlanService";
+import { getSavedRecipes } from "../../services/auth.service";
 import { getAllRecipes } from "../../services/recipeService";
 import { authService } from "../../services/auth.service";
-import { getMealPlan, scheduleMeal, unscheduleMeal } from "../../services/mealPlanService";
 import { useToast } from "../../context/ToastContext";
-import { Plus, Trash2, Search, Bell, AlertTriangle, Settings, GripVertical, MoreVertical, ChevronUp, Flame, Clock } from "lucide-react";
+import { 
+  ChevronLeft, 
+  ChevronRight, 
+  Plus, 
+  Clock, 
+  Flame, 
+  Star, 
+  Trash2, 
+  Calendar as CalendarIcon,
+  Check,
+  Search,
+  Bell,
+  AlertTriangle
+} from "lucide-react";
 import "./MealPlanner.css";
-
-const daysOfWeekVi = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
-const slots = ["breakfast", "lunch", "dinner"];
-
-const slotLabels = {
-  "breakfast": "Bữa Sáng",
-  "lunch": "Bữa Trưa",
-  "dinner": "Bữa Tối"
-};
-
-const slotMap = {
-  "breakfast": "breakfast",
-  "lunch": "lunch",
-  "dinner": "dinner",
-  "sáng": "breakfast",
-  "trưa": "lunch",
-  "tối": "dinner"
-};
 
 function MealPlanner() {
   const toast = useToast();
   const navigate = useNavigate();
   const [plannedMeals, setPlannedMeals] = useState({});
-  const [selectedDay, setSelectedDay] = useState(0); 
-  const [showSavedSheet, setShowSavedSheet] = useState(false);
-  const [activeSlot, setActiveSlot] = useState(null); 
   const [savedRecipes, setSavedRecipes] = useState([]);
   const [allRecipes, setAllRecipes] = useState([]);
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectionModal, setSelectionModal] = useState({ show: false, day: null, slot: null });
+  const [selectedDay, setSelectedDay] = useState(new Date().getDay() || 7);
+  const [user, setUser] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
-  const dates = useMemo(() => {
-    const today = new Date();
-    const monday = new Date(today);
-    const currentDayIndex = today.getDay() === 0 ? 6 : today.getDay() - 1;
-    monday.setDate(today.getDate() - currentDayIndex);
-    
-    return daysOfWeekVi.map((dayVi, i) => {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      const localIso = `${year}-${month}-${day}`;
-      
-      return { dayVi, date: d.getDate(), iso: localIso };
-    });
-  }, []);
+  // Constants
+  const slots = ["breakfast", "lunch", "dinner"];
+  const dates = [
+    { label: "Thứ 2", dayEn: "Monday", date: "12/05", id: 1 },
+    { label: "Thứ 3", dayEn: "Tuesday", date: "13/05", id: 2 },
+    { label: "Thứ 4", dayEn: "Wednesday", date: "14/05", id: 3 },
+    { label: "Thứ 5", dayEn: "Thursday", date: "15/05", id: 4 },
+    { label: "Thứ 6", dayEn: "Friday", date: "16/05", id: 5 },
+    { label: "Thứ 7", dayEn: "Saturday", date: "17/05", id: 6 },
+    { label: "CN", dayEn: "Sunday", date: "18/05", id: 7 },
+  ];
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const me = await authService.getMe();
-        setUser(me.data);
-
-        const recipesRes = await getAllRecipes();
-        const recipesArr = Array.isArray(recipesRes) ? recipesRes : (recipesRes?.recipes || []);
-        setAllRecipes(recipesArr);
-
-        const savedRes = await authService.getSavedRecipes();
-        setSavedRecipes(savedRes.data || []);
-
-        const startIso = dates[0].iso;
-        const endIso = dates[dates.length - 1].iso;
-        const dbPlan = await getMealPlan(startIso, endIso);
-        
-        const normalized = {};
-        const planData = dbPlan?.data || (Array.isArray(dbPlan) ? dbPlan : []);
-        
-        planData.forEach(node => {
-          if (!node || !node.date || !node.recipe) return;
-          const dayObj = dates.find(d => d.iso === node.date);
-          if (dayObj) {
-            const slotKey = slotMap[node.slot.toLowerCase()] || node.slot;
-            normalized[`${dayObj.dayVi}-${slotKey}`] = {
-              dbId: node._id,
-              recipeId: node.recipe._id,
-              title: node.recipe.title,
-              cal: node.recipe.calories || 0,
-              img: node.recipe.image
-            };
-          }
-        });
-        setPlannedMeals(normalized);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
+    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
+    window.addEventListener("resize", handleResize);
     fetchData();
-  }, [dates]);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
-  const handleRemoveMeal = async (compositeKey) => {
-    const node = plannedMeals[compositeKey];
-    if (!node || !node.dbId) return;
-
+  const fetchData = async () => {
     try {
-      await unscheduleMeal(node.dbId);
-      setPlannedMeals(prev => {
-        const copy = { ...prev };
-        delete copy[compositeKey];
-        return copy;
+      setLoading(true);
+      const [mealsRes, savedRes, recipesRes, userRes] = await Promise.all([
+        getMealPlans(),
+        getSavedRecipes(),
+        getAllRecipes(),
+        authService.getMe()
+      ]);
+      
+      const mealMap = {};
+      mealsRes.data.forEach(plan => {
+        mealMap[`${plan.day}-${plan.slot}`] = plan.recipeId;
       });
-      toast.info("Đã gỡ món khỏi lịch.");
+      setPlannedMeals(mealMap);
+      setSavedRecipes(savedRes.data || []);
+      setAllRecipes(recipesRes.recipes || []);
+      setUser(userRes.data);
     } catch (err) {
-      toast.error("Lỗi xóa món ăn.");
+      console.error("Meal Planner fetch error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const confirmAddMeal = async (recipe) => {
-    const targetDay = selectionModal.day || dates[selectedDay].dayVi;
-    const targetSlot = selectionModal.slot || 'lunch';
-    
-    const dayObj = dates.find(d => d.dayVi === targetDay);
-    if (!dayObj) return;
-
-    const compositeKey = `${targetDay}-${targetSlot}`;
-    const previousState = { ...plannedMeals };
-
-    setPlannedMeals(prev => ({
-      ...prev,
-      [compositeKey]: {
-        dbId: 'temp-' + Date.now(),
-        recipeId: recipe._id,
-        title: recipe.title,
-        cal: recipe.calories || 0,
-        img: recipe.image
-      }
-    }));
-
+  const handleAddMeal = async (day, slot, recipeId) => {
     try {
-      const response = await scheduleMeal(dayObj.iso, targetSlot, recipe._id);
-      const node = response.data || response;
-      setPlannedMeals(prev => ({
-        ...prev,
-        [compositeKey]: { ...prev[compositeKey], dbId: node._id }
-      }));
-      toast.success(`Đã lên lịch ${recipe.title}`);
-    } catch (err) {
-      setPlannedMeals(previousState);
-      toast.error("Lỗi khi cập nhật lịch ăn.");
+      await addMealToPlan({ day, slot, recipeId });
+      toast.success("Đã thêm món ăn vào lịch trình!");
+      fetchData();
+    } catch (err) { toast.error("Lỗi khi thêm món ăn."); }
+  };
+
+  const handleRemoveMeal = async (day, slot) => {
+    try {
+      await removeMealFromPlan(day, slot);
+      toast.success("Đã xóa món ăn khỏi lịch trình.");
+      fetchData();
+    } catch (err) { toast.error("Lỗi khi xóa món ăn."); }
+  };
+
+  const getSlotColor = (slot) => {
+    switch (slot) {
+      case 'breakfast': return '#fcd34d';
+      case 'lunch': return '#4ade80';
+      case 'dinner': return '#fb923c';
+      default: return '#10b981';
     }
   };
 
-  if (loading) {
-    return <div className="loading-screen">Đang tải lịch trình...</div>;
-  }
+  if (loading) return <div className="loading-screen">Đang tải lịch trình...</div>;
 
-  return (
-    <div className="planner-premium-container">
-      {/* 1. App Header */}
-      <div className="planner-app-header">
-        <h1 className="brand-text">HomeChef</h1>
-        <div className="header-icons">
-          <button className="icon-btn"><Bell size={22} /></button>
-          <button className="icon-btn"><Settings size={22} /></button>
-        </div>
-      </div>
+  const currentDayLabel = dates.find(d => d.id === selectedDay)?.dayEn;
 
-      {/* 2. Horizontal Date Picker */}
-      <div className="premium-date-picker">
-        {dates.map((d, i) => (
-          <div 
-            key={d.dayVi} 
-            className={`date-capsule ${selectedDay === i ? 'active' : ''}`}
-            onClick={() => setSelectedDay(i)}
-          >
-            <span className="day-name">{d.dayVi}</span>
-            <span className="date-num">{d.date}</span>
-            {(plannedMeals[`${d.dayVi}-breakfast`] || plannedMeals[`${d.dayVi}-lunch`] || plannedMeals[`${d.dayVi}-dinner`]) && (
-              <div className="has-meal-dot"></div>
-            )}
-          </div>
-        ))}
-      </div>
+  // --- MOBILE RENDERING ---
+  if (isMobile) {
+    return (
+      <div className="meal-planner-v3 mobile-version">
+        <header className="planner-header-v3">
+          <button className="back-btn-v3" onClick={() => navigate('/')}><ChevronLeft size={24} /></button>
+          <h2>Lịch trình ăn uống</h2>
+          <button className="calendar-btn-v3"><CalendarIcon size={22} /></button>
+        </header>
 
-      {/* 3. Daily View */}
-      <div className="daily-view-premium">
-        <div className="view-section-header">
-          <h3>{dates[selectedDay].dayVi} Plan</h3>
-          <button className="add-custom-btn" onClick={() => setShowSavedSheet(true)}>
-            <Plus size={18} /> Add Custom
-          </button>
-        </div>
+        <section className="date-picker-v3">
+          {dates.map(d => (
+            <div 
+              key={d.id} 
+              className={`date-capsule-v3 ${selectedDay === d.id ? 'active' : ''}`}
+              onClick={() => setSelectedDay(d.id)}
+            >
+              <span className="day-label">{d.label}</span>
+              <span className="date-number">{d.date.split('/')[0]}</span>
+              {slots.some(s => plannedMeals[`${d.dayEn}-${s}`]) && <div className="dot-indicator"></div>}
+            </div>
+          ))}
+        </section>
 
-        <div className="meal-stack-premium">
+        <main className="meal-slots-v3">
           {slots.map(slot => {
-            const dayVi = dates[selectedDay].dayVi;
-            const meal = plannedMeals[`${dayVi}-${slot}`];
+            const recipe = plannedMeals[`${currentDayLabel}-${slot}`];
+            const accentColor = getSlotColor(slot);
 
             return (
-              <div key={slot} className={`meal-card-premium slot-${slot}`} onClick={() => { setSelectionModal({ show: false, day: dayVi, slot: slot }); setShowSavedSheet(true); }}>
-                <div className="meal-card-inner">
-                  <div className="meal-img-container">
-                    <img src={meal?.img || "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=200"} alt={meal?.title} />
-                  </div>
-                  <div className="meal-details">
-                    <div className="slot-header">
-                      <span className="slot-type">{slotLabels[slot].toUpperCase()}</span>
-                      <GripVertical size={14} className="drag-handle" />
-                    </div>
-                    {meal ? (
-                      <>
-                        <h4>{meal.title}</h4>
-                        <div className="meal-metrics">
-                          <span>{meal.cal} kcal</span>
-                          <span className="dot"></span>
-                          <span>15 mins</span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="empty-slot-text">Chưa có món ăn</div>
-                    )}
-                  </div>
-                  <button className="more-btn" onClick={(e) => { e.stopPropagation(); if(meal) handleRemoveMeal(`${dayVi}-${slot}`); }}>
-                    {meal ? <Trash2 size={18} /> : <MoreVertical size={20} />}
-                  </button>
+              <div key={slot} className="meal-slot-card-v3" style={{ borderLeft: `6px solid ${accentColor}` }}>
+                <div className="slot-header-v3">
+                  <span className="slot-title-v3" style={{ color: accentColor }}>
+                    {slot === 'breakfast' ? 'Bữa sáng' : slot === 'lunch' ? 'Bữa trưa' : 'Bữa tối'}
+                  </span>
+                  {recipe && <button className="delete-btn-v3" onClick={() => handleRemoveMeal(currentDayLabel, slot)}><Trash2 size={16} /></button>}
                 </div>
+
+                {recipe ? (
+                  <div className="recipe-mini-card-v3">
+                    <img src={recipe.image} alt={recipe.title} className="recipe-thumb-v3" />
+                    <div className="recipe-details-v3">
+                      <h4>{recipe.title}</h4>
+                      <div className="recipe-meta-v3">
+                        <span><Clock size={12} /> {recipe.cookTime}p</span>
+                        <span><Flame size={12} /> {recipe.calories} kcal</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <button className="add-recipe-btn-v3" onClick={() => {
+                    // Logic to open saved recipes sheet
+                  }}>
+                    <Plus size={20} />
+                    <span>Lên thực đơn {slot === 'breakfast' ? 'sáng' : slot === 'lunch' ? 'trưa' : 'tối'}</span>
+                  </button>
+                )}
               </div>
             );
           })}
+        </main>
+
+        <section className="saved-tray-v3">
+          <div className="tray-header-v3">
+            <h3>Món ăn đã lưu</h3>
+            <button onClick={() => navigate('/recipes')}>Xem tất cả</button>
+          </div>
+          <div className="tray-scroll-v3">
+            {savedRecipes.map(recipe => (
+              <div key={recipe._id} className="tray-item-v3" onClick={() => handleAddMeal(currentDayLabel, "lunch", recipe._id)}>
+                <img src={recipe.image} alt={recipe.title} />
+                <span translate="no">{recipe.title}</span>
+                <div className="add-overlay"><Plus size={20} /></div>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // --- DESKTOP RENDERING ---
+  return (
+    <div className="planner-v2-container desktop-version">
+      <header className="planner-header">
+        <h1 className="header-title">Lịch trình hàng tuần</h1>
+        <div className="header-actions">
+          <button className="notif-btn"><Bell size={20} /></button>
+          <div className="user-profile" onClick={() => navigate('/profile')}>
+            <img src={user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"} alt="Avatar" />
+          </div>
         </div>
+      </header>
+
+      <div className="planner-grid">
+        {dates.map(({ dayEn, date }) => {
+          return (
+            <div key={dayEn} className="grid-column">
+              <div className="column-head">
+                <span className="day-text">{dayEn}</span>
+                <span className="date-text">{date}</span>
+              </div>
+
+              <div className="column-slots">
+                 {slots.map(slot => {
+                  const recipe = plannedMeals[`${dayEn}-${slot}`];
+                  return (
+                    <div key={slot} className="slot-item">
+                      <span className="slot-name">BỮA {slot.toUpperCase()}</span>
+                      {recipe ? (
+                        <div className="meal-card">
+                          <div className="meal-info">
+                            <h5 translate="no">{recipe.title}</h5>
+                            <p>{recipe.calories || 0} kcal</p>
+                          </div>
+                          <button className="remove-meal-btn" onClick={() => handleRemoveMeal(dayEn, slot)}>
+                            <Trash2 size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="empty-slot" onClick={() => {
+                          if (savedRecipes.length > 0) handleAddMeal(dayEn, slot, savedRecipes[0]._id);
+                        }}>
+                           <Plus size={20} className="plus-icon" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* 4. Bottom Sheet (Saved Recipes) */}
-      <div className={`saved-sheet-premium ${showSavedSheet ? 'open' : ''}`}>
-        <div className="sheet-backdrop" onClick={() => setShowSavedSheet(false)}></div>
-        <div className="sheet-content-premium">
-          <div className="sheet-handle"></div>
-          <div className="sheet-header">
-            <h4>Saved Recipes</h4>
-            <ChevronUp size={20} className="arrow" />
-          </div>
-          <div className="horizontal-recipe-list">
-            {savedRecipes.length > 0 ? (
-              savedRecipes.map(recipe => (
-                <div key={recipe._id} className="recipe-bubble-item" onClick={() => {
-                  confirmAddMeal(recipe);
-                  setShowSavedSheet(false);
-                }}>
-                  <img src={recipe.image} alt={recipe.title} />
-                  <span>{recipe.title}</span>
-                </div>
-              ))
-            ) : (
-              <div className="empty-saved-mini">Bạn chưa lưu món nào</div>
-            )}
-          </div>
+      <div className="planner-bottom">
+        <div className="summary-widget">
+          <h4>Tóm tắt hàng tuần</h4>
+          <p>Dựa trên kế hoạch hiện tại, bạn sẽ tiêu thụ trung bình 1,850 kcal/ngày.</p>
+          <button className="generate-btn" onClick={() => navigate('/shopping-list')}>
+            Tạo danh sách mua sắm <Plus size={18} />
+          </button>
         </div>
       </div>
     </div>

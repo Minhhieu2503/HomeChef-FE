@@ -16,9 +16,9 @@ function Pantry() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [newItem, setNewItem] = useState({ name: "", quantity: "", unit: "g", category: "Other", emoji: "📦", expiryDate: "" });
-  const [user, setUser] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
-  // --- Scan Feature States ---
+  // --- Scan States ---
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
   const [scanImage, setScanImage] = useState(null);
   const [scanPreview, setScanPreview] = useState(null);
@@ -28,259 +28,53 @@ function Pantry() {
   const [expandedRecipe, setExpandedRecipe] = useState(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
-  // --- Scan Handlers ---
-  const handleImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Ảnh quá lớn! Tối đa 5MB.");
-      return;
-    }
-    setScanImage(file);
-    setScanPreview(URL.createObjectURL(file));
-    setScanResult(null);
-  };
-
-  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-
-  const handleAnalyze = async () => {
-    if (!scanImage) return;
-    setIsScanning(true);
-    try {
-      const result = await scanIngredientImage(scanImage);
-      // result is { success: true, message: "...", data: [savedItems], type: "..." }
-
-      toast.success(result.message || "Đã quét và thêm vào tủ lạnh thành công!");
-      setScanResult(result);
-
-      // Refresh the user/pantry list
-      fetchData();
-    } catch (err) {
-      console.error("Scan error:", err);
-      if (err.response?.status === 403) {
-        setIsUpgradeModalOpen(true);
-        toast.error("Bạn đã hết lượt dùng thử tính năng cao cấp!");
-      } else {
-        toast.error(err.response?.data?.message || "Không thể phân tích ảnh. Vui lòng thử lại!");
-      }
-    } finally {
-      setIsScanning(false);
-    }
-  };
-
-  const toggleIngredient = (idx) => {
-    setSelectedIngredients(prev => ({ ...prev, [idx]: !prev[idx] }));
-  };
-
-  const handleBulkAdd = async () => {
-    if (!scanResult?.ingredients) return;
-    const toAdd = scanResult.ingredients.filter((_, i) => selectedIngredients[i]);
-    if (toAdd.length === 0) {
-      toast.error("Vui lòng chọn ít nhất 1 nguyên liệu!");
-      return;
-    }
-    let added = 0;
-    for (const ing of toAdd) {
-      try {
-        await addPantryItem({
-          name: ing.name,
-          quantity: parseInt(ing.quantity) || 1,
-          unit: "g",
-          category: "Other",
-          emoji: ing.emoji || "📦"
-        });
-        added++;
-      } catch (e) { console.error("Add error:", e); }
-    }
-    toast.success(`Đã thêm ${added} nguyên liệu vào tủ lạnh! 🎉`);
-    closeScanModal();
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
+    window.addEventListener("resize", handleResize);
     fetchData();
-  };
-
-  const closeScanModal = () => {
-    setIsScanModalOpen(false);
-    setScanImage(null);
-    setScanPreview(null);
-    setScanResult(null);
-    setSelectedIngredients({});
-    setExpandedRecipe(null);
-    setIsScanning(false);
-  };
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-
-      // 1. Get Pantry Items
-      const pantryRes = await getPantryItems("All");
-      const items = Array.isArray(pantryRes.data || pantryRes) ? (pantryRes.data || pantryRes) : [];
+      const [pantryRes, recipesRes] = await Promise.all([
+        getPantryItems("All"),
+        getAllRecipes()
+      ]);
+      const items = pantryRes.data || pantryRes || [];
       setIngredients(items);
-
-      // 2. Get All Recipes
-      const recipesRes = await getAllRecipes();
-      const allRecipes = recipesRes?.recipes || (Array.isArray(recipesRes) ? recipesRes : []);
-
-      // 3. Smart Vietnamese-aware Matching Logic
-      if (items.length > 0 && allRecipes.length > 0) {
-        const pantryNames = items.map(i => i.name.toLowerCase().trim());
-
-        // Hàm chuẩn hóa tên nguyên liệu tiếng Việt
-        const normalizeVI = (name) => {
-          const removeWords = ["tươi", "khô", "non", "chín", "sạch", "thái", "băm", "cắt", "xay", "hoặc", "và"];
-          let n = name.toLowerCase().trim();
-          const parts = n.split(/[,\/]/).map(p => p.trim()).filter(p => p.length > 0);
-          return parts.map(part => {
-            removeWords.forEach(w => { part = part.replace(new RegExp(`\\b${w}\\b`, 'gi'), '').trim(); });
-            return part.replace(/\s+/g, ' ').trim();
-          }).filter(p => p.length > 1);
-        };
-
-        // Fuzzy matching cho tiếng Việt
-        const isMatch = (pantryName, recipeName) => {
-          const pParts = normalizeVI(pantryName);
-          const rParts = normalizeVI(recipeName);
-          for (const p of pParts) {
-            for (const r of rParts) {
-              if (p === r || p.includes(r) || r.includes(p)) return true;
-              const pWords = p.split(' ');
-              const rWords = r.split(' ');
-              const common = pWords.filter(w => rWords.includes(w));
-              if (common.length >= 1 && common.length / Math.max(pWords.length, rWords.length) >= 0.5) return true;
-            }
-          }
-          return false;
-        };
-
-        const scoredRecipes = allRecipes.map(recipe => {
-          const recipeIngredients = recipe.ingredients || [];
-          const matchedIngredients = [];
-          const missingIngredients = [];
-
-          recipeIngredients.forEach(ri => {
-            const found = pantryNames.some(pn => isMatch(pn, ri.name));
-            if (found) matchedIngredients.push(ri.name);
-            else missingIngredients.push(ri.name);
-          });
-
-          const matchPercentage = recipeIngredients.length > 0
-            ? Math.round((matchedIngredients.length / recipeIngredients.length) * 100)
-            : 0;
-
-          return {
-            ...recipe,
-            matches: matchedIngredients,
-            missingIngredients,
-            matchCount: matchedIngredients.length,
-            matchPercentage
-          };
-        });
-
-        // Sort by percentage then count, take top 8
-        const topMatches = scoredRecipes
-          .filter(r => r.matchCount > 0)
-          .sort((a, b) => {
-            if (b.matchPercentage !== a.matchPercentage) return b.matchPercentage - a.matchPercentage;
-            return b.matchCount - a.matchCount;
-          })
-          .slice(0, 8);
-
-        setRescueRecipes(topMatches.length > 0 ? topMatches : allRecipes.slice(0, 8));
-      } else {
-        setRescueRecipes(allRecipes.slice(0, 8));
-      }
+      setRescueRecipes(recipesRes.recipes?.slice(0, 8) || []);
     } catch (err) {
-      console.error("Pantry refresh error:", err);
+      console.error("Pantry fetch error:", err);
     } finally {
       setLoading(false);
     }
   };
 
-
-  const calculateStats = () => {
-    const totalItems = ingredients.length;
-    const fillPercent = Math.min(Math.round((totalItems / 20) * 100), 100);
-
-    const now = new Date();
-    const fortyEightHours = 48 * 60 * 60 * 1000;
-    const expiringCount = ingredients.filter(item => {
-      if (!item.expiryDate) return false;
-      const diff = new Date(item.expiryDate) - now;
-      return diff > 0 && diff < fortyEightHours;
-    }).length;
-
-    return { fillPercent, expiringCount };
-  };
-
-  const { fillPercent, expiringCount } = calculateStats();
-
-  useEffect(() => {
-    const init = async () => {
-      const me = await authService.getMe();
-      setUser(me.data);
-      fetchData();
-    };
-    init();
-  }, []);
-
   const handleSubmitIngredient = async (e) => {
     e.preventDefault();
-    if (!newItem.name || !newItem.quantity) {
-      toast.error("Vui lòng nhập đầy đủ tên và số lượng!");
-      return;
-    }
     try {
-      const dataToSend = {
-        ...newItem,
-        quantity: Number(newItem.quantity)
-      };
-
       if (editingItem) {
-        await updatePantryItem(editingItem._id, dataToSend);
-        toast.success(`Đã cập nhật ${newItem.name}!`);
+        await updatePantryItem(editingItem._id, newItem);
+        toast.success("Đã cập nhật!");
       } else {
-        await addPantryItem(dataToSend);
-        toast.success(`Đã thêm ${newItem.name} vào tủ lạnh!`);
+        await addPantryItem(newItem);
+        toast.success("Đã thêm!");
       }
-
       closeModal();
       fetchData();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Lỗi khi xử lý dữ liệu.");
-    }
+    } catch (err) { toast.error("Lỗi xử lý."); }
   };
 
   const handleEditClick = (item) => {
     setEditingItem(item);
-    setNewItem({
-      name: item.name,
-      quantity: item.quantity,
-      unit: item.unit || "g",
-      category: item.category || "Other",
-      emoji: item.emoji || "📦",
-      expiryDate: item.expiryDate ? new Date(item.expiryDate).toISOString().split('T')[0] : ""
-    });
+    setNewItem({ ...item, expiryDate: item.expiryDate ? new Date(item.expiryDate).toISOString().split('T')[0] : "" });
     setIsModalOpen(true);
-  };
-
-  const handleDeleteClick = (item) => {
-    setItemToDelete(item);
-    setIsConfirmModalOpen(true);
-  };
-
-  const confirmDelete = async () => {
-    if (!itemToDelete) return;
-    try {
-      await deletePantryItem(itemToDelete._id);
-      toast.success(`Đã xóa ${itemToDelete.name}.`);
-      setIsConfirmModalOpen(false);
-      setItemToDelete(null);
-      fetchData();
-    } catch (err) {
-      toast.error("Lỗi khi xóa nguyên liệu.");
-    }
   };
 
   const closeModal = () => {
@@ -289,457 +83,143 @@ function Pantry() {
     setNewItem({ name: "", quantity: "", unit: "g", category: "Other", emoji: "📦", expiryDate: "" });
   };
 
-  const getFreshnessColor = (days) => {
-    if (days < 0) return "#1f2937"; // Expired
-    if (days <= 2) return "#ef4444";
-    if (days <= 5) return "#f59e0b";
-    return "#22c55e";
+  const handleAnalyze = async () => {
+    if (!scanImage) return;
+    setIsScanning(true);
+    try {
+      const result = await scanIngredientImage(scanImage);
+      setScanResult(result);
+      fetchData();
+    } catch (err) { toast.error("Lỗi quét."); }
+    finally { setIsScanning(false); }
   };
 
-  return (
-    <div className="pantry-v2-container">
-      {/* 1. Fridge Pulse Grid */}
-      <section className="fridge-pulse-section">
-        <h3>Fridge Pulse</h3>
-        <div className="pulse-grid">
-          {[
-            { label: "Produce", key: "Vegetable", color: "#10b981" },
-            { label: "Dairy", key: "Dairy", color: "#6366f1" },
-            { label: "Protein", key: "Meat", color: "#f43f5e" },
-            { label: "Grains", key: "Other", color: "#f59e0b" }
-          ].map(cat => {
-            const count = ingredients.filter(i => i.category === cat.key).length;
-            const fill = Math.min((count / 5) * 100, 100);
-            return (
-              <div key={cat.label} className="pulse-card">
-                <div className="pulse-label">
-                  <span>{cat.label}</span>
-                  <span className="count">{count}</span>
-                </div>
-                <div className="pulse-bar-bg">
-                  <div className="pulse-bar-fill" style={{ width: `${fill}%`, background: cat.color }}></div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+  const closeScanModal = () => {
+    setIsScanModalOpen(false);
+    setScanResult(null);
+    setScanPreview(null);
+  };
 
-      {/* 2. Inventory Main Content */}
-      <main className="inventory-main">
-        <div className="inventory-header">
-          <h3 translate="no">My Pantry</h3>
-          <div className="header-actions">
-            <button className="btn-scan-fridge-compact" onClick={() => setIsScanModalOpen(true)}>
-              <Camera size={18} />
-            </button>
-          </div>
-        </div>
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+    await deletePantryItem(itemToDelete._id);
+    setIsConfirmModalOpen(false);
+    fetchData();
+  };
 
-        <div className="ingredient-cards-stack">
-          {loading ? (
-            <p className="text-muted p-4">Đang kiểm tra kho hàng...</p>
-          ) : (
-            ingredients.length > 0 ? (
-              ingredients.map(item => {
-                let daysLeft = 7;
-                if (item.expiryDate) {
-                  const diffTime = new Date(item.expiryDate) - new Date();
-                  daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                }
-                const color = getFreshnessColor(daysLeft);
-                const fillPercent = Math.max(0, Math.min(daysLeft * 10, 100));
-
-                return (
-                  <div key={item._id} className="horizontal-ingredient-card-v2">
-                    <div className="card-left">
-                      <span className="item-emoji">{item.emoji || "📦"}</span>
-                      <div className="item-info">
-                        <h4 translate="no">{item.name}</h4>
-                        <div className="freshness-bar-v2">
-                          <div className="bar-bg">
-                            <div className="bar-fill" style={{ width: `${fillPercent}%`, background: color }}></div>
-                          </div>
-                          <span className="days-text" style={{ color }}>{daysLeft} days left</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card-right">
-                      <span className="qty-text">{item.quantity}{item.unit}</span>
-                      <div className="item-actions">
-                        <button className="btn-action-mini" onClick={() => handleEditClick(item)}><Edit2 size={14} /></button>
-                        <button className="btn-action-mini delete" onClick={() => handleDeleteClick(item)}><Trash2 size={14} /></button>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })
-            ) : (
-              <div className="empty-pantry">
-                <Package size={48} className="text-muted mb-4" />
-                <p>Tủ lạnh đang trống. Hãy thêm nguyên liệu mới!</p>
-              </div>
-            )
-          )}
-        </div>
-
-        {/* Floating Action Button */}
-        <button className="fab-add-pantry" onClick={() => setIsModalOpen(true)}>
-          <Plus size={28} />
-        </button>
-
-        {/* 3. Rescue Recipes */}
-        {ingredients.length > 0 && (
-          <section className="rescue-recipes-section">
-            <h3 translate="no">
-              <Zap size={20} className="text-orange-500" />
-              Giải cứu nguyên liệu
-            </h3>
-            <p className="rescue-subtitle">Gợi ý món ăn phù hợp với nguyên liệu bạn đang có</p>
-            <div className="rescue-grid">
-              {rescueRecipes.map(recipe => (
-                <Link to={`/recipes/${recipe._id}`} key={recipe._id} className="rescue-card">
-                  <div className="rescue-image-wrapper">
-                    <img src={recipe.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"} alt={recipe.title} />
-                    {recipe.matchPercentage > 0 && (
-                      <span className={`match-badge ${recipe.matchPercentage >= 75 ? 'high' : recipe.matchPercentage >= 50 ? 'medium' : 'low'}`}>
-                        {recipe.matchPercentage}% khớp
-                      </span>
-                    )}
-                  </div>
-                  <h5 translate="no">{recipe.title}</h5>
-                  <div className="rescue-card-info">
-                    <span className="matched-info">
-                      ✅ Có: {recipe.matches && recipe.matches.length > 0
-                        ? recipe.matches.slice(0, 3).join(", ") + (recipe.matches.length > 3 ? ` +${recipe.matches.length - 3}` : "")
-                        : "Nguyên liệu sẵn có"}
-                    </span>
-                    {recipe.missingIngredients && recipe.missingIngredients.length > 0 && (
-                      <span className="missing-info">
-                        🛒 Thiếu: {recipe.missingIngredients.length} nguyên liệu
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex justify-between items-center mt-auto">
-                    <div className="recipe-meta-mini">
-                      {recipe.cookTime && <span><Clock size={12} /> {recipe.cookTime}p</span>}
-                      {recipe.calories && <span><Flame size={12} /> {recipe.calories} kcal</span>}
-                    </div>
-                    <ChevronRight size={16} className="text-primary" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-      </main>
-
-      {/* Add Item Modal */}
+  // --- SHARED COMPONENTS ---
+  const renderModals = () => (
+    <>
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal-content animate-popIn">
             <header className="modal-header">
-              <h3>{editingItem ? "Sửa nguyên liệu" : "Thêm nguyên liệu mới"}</h3>
+              <h3>{editingItem ? "Sửa nguyên liệu" : "Thêm mới"}</h3>
+              <button onClick={closeModal}><X /></button>
             </header>
-
             <form onSubmit={handleSubmitIngredient} className="pantry-form">
-              <div className="form-group">
-                <label>Tên nguyên liệu</label>
-                <input
-                  type="text"
-                  placeholder="Ví dụ: Cà chua, Thịt bò..."
-                  value={newItem.name}
-                  onChange={e => setNewItem({ ...newItem, name: e.target.value })}
-                  required
-                />
-              </div>
-
+              <div className="form-group"><label>Tên</label><input value={newItem.name} onChange={e => setNewItem({...newItem, name: e.target.value})} required /></div>
               <div className="form-row">
-                <div className="form-group">
-                  <label>Số lượng</label>
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={newItem.quantity}
-                    onChange={e => setNewItem({ ...newItem, quantity: e.target.value })}
-                    required
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Đơn vị</label>
-                  <select
-                    value={newItem.unit}
-                    onChange={e => setNewItem({ ...newItem, unit: e.target.value })}
-                  >
-                    <option value="g">gram (g)</option>
-                    <option value="kg">kilogram (kg)</option>
-                    <option value="ml">mililit (ml)</option>
-                    <option value="l">lít (l)</option>
-                    <option value="quả">quả</option>
-                    <option value="chai">chai</option>
-                    <option value="túi">túi</option>
-                    <option value="gói">gói</option>
-                  </select>
-                </div>
+                <div className="form-group"><label>Số lượng</label><input type="number" value={newItem.quantity} onChange={e => setNewItem({...newItem, quantity: e.target.value})} /></div>
+                <div className="form-group"><label>Đơn vị</label><select value={newItem.unit} onChange={e => setNewItem({...newItem, unit: e.target.value})}><option value="g">g</option><option value="kg">kg</option><option value="ml">ml</option><option value="quả">quả</option></select></div>
               </div>
-
-              <div className="form-group">
-                <label>Phân loại</label>
-                <select
-                  value={newItem.category}
-                  onChange={e => setNewItem({ ...newItem, category: e.target.value })}
-                >
-                  <option value="Meat">Thịt & Hải sản</option>
-                  <option value="Vegetable">Rau củ quả</option>
-                  <option value="Fruit">Trái cây</option>
-                  <option value="Dairy">Sữa & Trứng</option>
-                  <option value="Spice">Gia vị</option>
-                  <option value="Other">Khác</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Ngày hết hạn</label>
-                <input
-                  type="date"
-                  value={newItem.expiryDate}
-                  onChange={e => setNewItem({ ...newItem, expiryDate: e.target.value })}
-                />
-              </div>
-
-              <div className="modal-footer">
-                <button type="button" className="btn-cancel" onClick={closeModal}>
-                  Hủy
-                </button>
-                <button type="submit" className="btn-save-ingredient">
-                  {editingItem ? "Cập nhật thay đổi" : "Lưu vào tủ lạnh"}
-                </button>
-              </div>
+              <div className="modal-footer"><button type="button" onClick={closeModal}>Hủy</button><button type="submit" className="btn-save">Lưu</button></div>
             </form>
           </div>
         </div>
       )}
-
-      {/* Scan Modal */}
-      {isScanModalOpen && (
-        <div className="modal-overlay">
-          <div className="scan-modal animate-popIn">
-            <header className="scan-modal-header">
-              <div className="scan-title">
-                <Camera size={22} />
-                <h3>Quét tủ lạnh thông minh</h3>
-              </div>
-              <button className="close-btn" onClick={closeScanModal}>
-                <X size={20} />
-              </button>
-            </header>
-
-            <div className="scan-modal-body">
-              {/* Step 1: Image Selection */}
-              {!scanResult && (
-                <div className="scan-upload-area">
-                  {!scanPreview ? (
-                    <div className="upload-zone">
-                      <div className="upload-icon-wrapper">
-                        <Camera size={40} />
-                      </div>
-                      <p className="upload-title">Chụp ảnh nguyên liệu trong tủ lạnh</p>
-                      <p className="upload-desc">AI sẽ nhận diện và gợi ý món ăn cho bạn</p>
-                      <div className="upload-buttons">
-                        <button className="upload-btn camera" onClick={() => cameraInputRef.current?.click()}>
-                          <Camera size={18} /> Camera
-                        </button>
-                        <button className="upload-btn gallery" onClick={() => fileInputRef.current?.click()}>
-                          <Upload size={18} /> Chọn ảnh
-                        </button>
-                      </div>
-                      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleImageSelect} hidden />
-                      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} hidden />
-                    </div>
-                  ) : (
-                    <div className="preview-area">
-                      <div className="preview-image-wrapper">
-                        <img src={scanPreview} alt="Preview" className="preview-image" />
-                        {isScanning && (
-                          <div className="scanning-overlay">
-                            <div className="scan-line"></div>
-                            <div className="scan-pulse">
-                              <Loader size={32} className="spin" />
-                              <span>AI đang phân tích...</span>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      {!isScanning && (
-                        <div className="preview-actions">
-                          <button className="btn-change-image" onClick={() => { setScanPreview(null); setScanImage(null); }}>
-                            Chọn ảnh khác
-                          </button>
-                          <button className="btn-analyze" onClick={handleAnalyze}>
-                            <Sparkles size={18} /> Phân tích nguyên liệu
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Step 2: Results (Success Message & Recipes) */}
-              {scanResult && (
-                <div className="scan-results-success">
-                  <div className="success-header">
-                    <div className="success-icon">
-                      <CheckCircle2 size={48} />
-                    </div>
-                    <h4>{scanResult.type === 'bill' ? 'Đã quét hóa đơn!' : 'Đã quét xong tủ lạnh!'}</h4>
-                    <p>{scanResult.message}</p>
-                  </div>
-
-                  <div className="detected-items-list">
-                    <h5>Danh sách các nguyên liệu đã quét:</h5>
-                    <div className="items-grid">
-                      {(scanResult.data || []).map((item, idx) => (
-                        <div key={idx} className="mini-item-card">
-                          <span className="mini-emoji">{item.emoji}</span>
-                          <span className="mini-name">{item.name}</span>
-                          <span className="mini-qty">{item.quantity} {item.unit}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Suggested Recipes (if any) */}
-                  {scanResult.recipes && scanResult.recipes.length > 0 && (
-                    <div className="result-section">
-                      <h4><ChefHat size={18} /> Gợi ý món ăn từ AI</h4>
-                      <div className="suggested-recipes">
-                        {scanResult.recipes.map((recipe, idx) => (
-                          <div key={idx} className="suggested-recipe-card">
-                            <div className="suggested-recipe-top">
-                              <img src={recipe.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300'} alt={recipe.title} />
-                              <div className="suggested-recipe-info">
-                                <h5>{recipe.title}</h5>
-                                <div className="recipe-meta-tags">
-                                  <span><Clock size={13} /> {recipe.cookTime} phút</span>
-                                  <span><Flame size={13} /> {recipe.calories} kcal</span>
-                                  <span className={`difficulty ${recipe.difficulty === 'Dễ' ? 'easy' : recipe.difficulty === 'Khó' ? 'hard' : 'medium'}`}>{recipe.difficulty}</span>
-                                </div>
-                              </div>
-                              <div className="suggested-recipe-actions flex gap-2">
-                                <button className="btn-cook-this" onClick={() => navigate('/recipes/custom-ai-recipe', { state: { aiRecipe: { ...recipe, _id: 'custom-ai-recipe', ingredients: scanResult.data.map(ing => ({ name: ing.name, quantity: ing.quantity, unit: ing.unit })) } } })}>
-                                  <Flame size={16} /> Nấu
-                                </button>
-                                <button className="btn-expand-recipe" onClick={() => setExpandedRecipe(expandedRecipe === idx ? null : idx)}>
-                                  {expandedRecipe === idx ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                                </button>
-                              </div>
-                            </div>
-                            {expandedRecipe === idx && recipe.steps && (
-                              <div className="recipe-steps">
-                                {recipe.steps.map((step, sIdx) => (
-                                  <div key={sIdx} className="recipe-step">
-                                    <div className="step-number">{step.order || sIdx + 1}</div>
-                                    <p>{step.instruction}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="scan-success-footer">
-                    <button className="btn-done" onClick={closeScanModal}>
-                      Xong
-                    </button>
-                    <button className="btn-scan-again-simple" onClick={() => { setScanResult(null); setScanPreview(null); setScanImage(null); }}>
-                      Quét thêm
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Confirm Delete Modal */}
       {isConfirmModalOpen && (
         <div className="modal-overlay">
-          <div className="confirm-modal animate-popIn">
-            <div className="confirm-modal-icon">
-              <AlertTriangle size={32} />
-            </div>
-            <div className="confirm-modal-content">
-              <h3>Xác nhận xóa</h3>
-              <p>
-                Bạn có chắc chắn muốn xóa <strong>{itemToDelete?.name}</strong>? 
-                Hành động này không thể hoàn tác.
-              </p>
-            </div>
-            <div className="confirm-modal-footer">
-              <button className="btn-cancel-confirm" onClick={() => setIsConfirmModalOpen(false)}>
-                Hủy
-              </button>
-              <button className="btn-delete-confirm" onClick={confirmDelete}>
-                Xóa ngay
-              </button>
-            </div>
+          <div className="confirm-modal">
+            <h3>Xóa nguyên liệu?</h3>
+            <div className="flex gap-4 mt-6"><button onClick={() => setIsConfirmModalOpen(false)}>Hủy</button><button onClick={confirmDelete} className="bg-red-500 text-white p-2 px-4 rounded-xl">Xóa</button></div>
           </div>
         </div>
       )}
-      {/* Upgrade Modal */}
-      {isUpgradeModalOpen && (
-        <div className="modal-overlay">
-          <div className="upgrade-modal animate-popIn">
-            <button className="close-upgrade-btn" onClick={() => setIsUpgradeModalOpen(false)}>
-              <X size={20} />
-            </button>
-            <div className="upgrade-header">
-              <div className="premium-crown">
-                <Sparkles size={40} className="text-yellow-400" />
-              </div>
-              <h3>Trải nghiệm Full tính năng</h3>
-              <p>Bạn đã sử dụng hết 3 lượt dùng thử miễn phí.</p>
-            </div>
-            
-            <div className="upgrade-benefits">
-              <div className="benefit-item">
-                <CheckCircle2 size={20} className="text-green-500" />
-                <span>Quét tủ lạnh & Hóa đơn không giới hạn</span>
-              </div>
-              <div className="benefit-item">
-                <CheckCircle2 size={20} className="text-green-500" />
-                <span>Gợi ý thực đơn AI chuyên sâu</span>
-              </div>
-              <div className="benefit-item">
-                <CheckCircle2 size={20} className="text-green-500" />
-                <span>Theo dõi dinh dưỡng cá nhân hóa</span>
-              </div>
-              <div className="benefit-item">
-                <CheckCircle2 size={20} className="text-green-500" />
-                <span>Tải công thức nấu ăn Offline</span>
-              </div>
-            </div>
+    </>
+  );
 
-            <div className="upgrade-footer">
-              <div className="price-tag">
-                <span className="amount">49.000đ</span>
-                <span className="period">/tháng</span>
+  if (isMobile) {
+    return (
+      <div className="pantry-v2-container mobile-version">
+        <section className="fridge-pulse-section">
+          <h3>Fridge Pulse</h3>
+          <div className="pulse-grid">
+            {[
+              { label: "Produce", key: "Vegetable", color: "#10b981" },
+              { label: "Dairy", key: "Dairy", color: "#6366f1" },
+              { label: "Protein", key: "Meat", color: "#f43f5e" },
+              { label: "Grains", key: "Other", color: "#f59e0b" }
+            ].map(cat => (
+              <div key={cat.label} className="pulse-card">
+                <div className="pulse-label"><span>{cat.label}</span><span>{ingredients.filter(i => i.category === cat.key).length}</span></div>
+                <div className="pulse-bar-bg"><div className="pulse-bar-fill" style={{ width: '60%', background: cat.color }}></div></div>
               </div>
-              <button className="btn-upgrade-now" onClick={() => {
-                setIsUpgradeModalOpen(false);
-                navigate('/pricing');
-              }}>
-                Nâng cấp ngay <ChevronRight size={18} />
-              </button>
+            ))}
+          </div>
+        </section>
+
+        <main className="inventory-main">
+          <div className="inventory-header"><h3>My Pantry</h3><button className="btn-scan-fridge-compact" onClick={() => setIsScanModalOpen(true)}><Camera size={18} /></button></div>
+          <div className="ingredient-cards-stack">
+            {ingredients.map(item => (
+              <div key={item._id} className="horizontal-ingredient-card-v2">
+                <div className="card-left"><span className="item-emoji">{item.emoji || "📦"}</span><div className="item-info"><h4>{item.name}</h4><span className="days-text">7 days left</span></div></div>
+                <div className="card-right"><span className="qty-text">{item.quantity}{item.unit}</span><div className="item-actions"><button onClick={() => handleEditClick(item)}><Edit2 size={14} /></button><button onClick={() => { setItemToDelete(item); setIsConfirmModalOpen(true); }}><Trash2 size={14} /></button></div></div>
+              </div>
+            ))}
+          </div>
+        </main>
+
+        <button className="fab-add-pantry" onClick={() => setIsModalOpen(true)}><Plus size={28} /></button>
+        {renderModals()}
+      </div>
+    );
+  }
+
+  // --- DESKTOP VERSION ---
+  return (
+    <div className="pantry-container desktop-version">
+      <div className="pantry-header-desktop">
+        <div className="header-info">
+          <h1>Quản lý Tủ lạnh</h1>
+          <p>Bạn đang có {ingredients.length} nguyên liệu trong kho.</p>
+        </div>
+        <div className="header-actions">
+          <button className="btn-scan-fridge" onClick={() => setIsScanModalOpen(true)}><Camera size={18} /> Quét tủ lạnh AI</button>
+          <button className="btn-add-item" onClick={() => setIsModalOpen(true)}><Plus size={18} /> Thêm mới</button>
+        </div>
+      </div>
+
+      <div className="pantry-layout">
+        <div className="inventory-grid">
+          {ingredients.map(item => (
+            <div key={item._id} className="ingredient-card-desktop">
+              <div className="card-emoji">{item.emoji || "📦"}</div>
+              <div className="card-content">
+                <h3>{item.name}</h3>
+                <p>{item.quantity} {item.unit}</p>
+                <div className="freshness-indicator"><div className="bar"><div className="fill" style={{ width: '80%' }}></div></div></div>
+              </div>
+              <div className="card-actions">
+                <button onClick={() => handleEditClick(item)}><Edit2 size={16} /></button>
+                <button onClick={() => { setItemToDelete(item); setIsConfirmModalOpen(true); }}><Trash2 size={16} /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <aside className="pantry-sidebar">
+          <div className="sidebar-card">
+            <h3>Fridge Pulse</h3>
+            <div className="pulse-stats">
+              <div className="stat-row"><span>Rau củ</span><span>70%</span></div>
+              <div className="stat-row"><span>Thịt cá</span><span>40%</span></div>
             </div>
           </div>
-        </div>
-      )}
+        </aside>
+      </div>
+      {renderModals()}
     </div>
   );
 }

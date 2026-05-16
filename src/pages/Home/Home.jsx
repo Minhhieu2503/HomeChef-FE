@@ -12,7 +12,9 @@ import {
   ChevronRight,
   Filter,
   Activity,
-  Award
+  Award,
+  Package,
+  ShoppingCart
 } from "lucide-react";
 import "./Home.css";
 
@@ -22,8 +24,12 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [activeFilter, setActiveFilter] = useState("All");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
   useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
+    window.addEventListener("resize", handleResize);
+    
     const fetchData = async () => {
       try {
         const [recipesRes, userRes] = await Promise.all([
@@ -39,6 +45,8 @@ function Home() {
       }
     };
     fetchData();
+    
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const filters = [
@@ -49,46 +57,160 @@ function Home() {
     { id: "Quick", label: "Nhanh gọn" }
   ];
 
-  return (
-    <div className="dashboard">
-      {/* 1. Mobile Custom Header */}
-      <header className="mobile-top-bar">
-        <div className="user-profile-v3" onClick={() => navigate("/profile")}>
-          <div className="user-avatar-wrapper">
-            <img 
-              src={user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"} 
-              alt="Avatar" 
-              className="user-avatar-main"
-            />
-            <div className="status-dot"></div>
+  // --- RENDERING LOGIC ---
+
+  if (isMobile) {
+    return (
+      <div className="dashboard mobile-version">
+        {/* 1. Mobile Custom Header */}
+        <header className="mobile-top-bar">
+          <div className="user-profile-v3" onClick={() => navigate("/profile")}>
+            <div className="user-avatar-wrapper">
+              <img 
+                src={user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"} 
+                alt="Avatar" 
+                className="user-avatar-main"
+              />
+            </div>
+            <div className="ml-3">
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Chào buổi sáng</p>
+              <h4 className="text-sm font-black text-slate-800">{user?.name?.split(' ')[0] || "Đầu bếp"} 👋</h4>
+            </div>
           </div>
-          <div className="ml-3">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Chào buổi sáng</p>
-            <h4 className="text-sm font-black text-slate-800">{user?.name?.split(' ')[0] || "Đầu bếp"} 👋</h4>
+
+          <div className="nutrition-pill">
+            <Activity size={14} className="text-green-500" />
+            <span>85% Mục tiêu</span>
           </div>
+        </header>
+
+        {/* 2. Search Area */}
+        <section className="mobile-search-area">
+          <div className="search-box-v3">
+            <Search size={20} className="text-slate-400" />
+            <input type="text" placeholder="Tìm món ăn, nguyên liệu..." />
+            <Filter size={18} className="text-slate-400" />
+          </div>
+        </section>
+
+        {/* 3. Quick Filters */}
+        <div className="quick-filters-v3">
+          {filters.map(f => (
+            <button 
+              key={f.id} 
+              className={`filter-chip ${activeFilter === f.id ? 'active' : ''}`}
+              onClick={() => setActiveFilter(f.id)}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
 
-        <div className="nutrition-pill">
-          <Activity size={14} className="text-green-500" />
-          <span>85% Mục tiêu</span>
+        {/* 4. Hero Banner */}
+        <section className="hero-v3">
+          <img 
+            src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800" 
+            alt="Morning Inspiration" 
+            className="hero-img"
+          />
+          <div className="hero-overlay">
+            <h2>Morning Inspiration</h2>
+            <div className="hero-meta">
+              <span><Clock size={12} /> 20 phút</span>
+              <span>•</span>
+              <span>Healthy Breakfast</span>
+            </div>
+          </div>
+        </section>
+
+        {/* 5. Trending Recipes List */}
+        <section className="trending-v3">
+          <div className="trending-header-v3">
+            <h3>Món ngon thịnh hành</h3>
+            <Link to="/recipes" className="view-all-link">Xem tất cả</Link>
+          </div>
+
+          <div className="vertical-recipe-list">
+            {loading ? (
+              <div className="p-10 text-center text-slate-400 font-bold">Đang tìm món ngon...</div>
+            ) : (
+              recipes.slice(0, 5).map(recipe => (
+                <div key={recipe._id} className="recipe-card-v3">
+                  <Link to={`/recipes/${recipe._id}`}>
+                    <img src={recipe.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600"} alt={recipe.title} className="card-img-v3" />
+                  </Link>
+                  <div className="card-body-v3">
+                    <div className="card-tags">
+                      <span className="tag-v3">{recipe.difficulty || "Dễ"}</span>
+                      {recipe.isPremium && <span className="tag-v3 flex items-center gap-1 bg-yellow-100 text-yellow-700"><Award size={10} /> Premium</span>}
+                    </div>
+                    <h4 translate="no">{recipe.title}</h4>
+                    <div className="card-footer-v3">
+                      <div className="flex gap-4">
+                        <div className="rating-v3">
+                          <Star size={14} fill="#fbbf24" stroke="#fbbf24" />
+                          <span>4.8</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs font-bold text-slate-400">
+                          <Clock size={12} />
+                          <span>{recipe.cookTime || 30}p</span>
+                        </div>
+                      </div>
+                      <button className="btn-start-v3" onClick={() => navigate(`/recipes/${recipe._id}`)}>
+                        Nấu ngay
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // --- DESKTOP VERSION ---
+  return (
+    <div className="dashboard desktop-version">
+      <header className="dashboard-header">
+        <div className="header-left">
+          <h1>Chào mừng trở lại, {user?.name || "Đầu bếp"}!</h1>
+          <p>Hôm nay bạn muốn nấu món gì?</p>
+        </div>
+        
+        <div className="header-right">
+          <div className="smart-search">
+            <Search size={18} className="search-icon" />
+            <input type="text" placeholder="Tìm kiếm công thức thông minh..." />
+          </div>
+          <div className="header-actions">
+            <button className="notification-btn">
+              <Bell size={20} />
+              <span className="notification-badge"></span>
+            </button>
+            <div className="user-profile-summary" onClick={() => navigate("/profile")}>
+              <img src={user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"} alt="User" className="user-avatar-small" />
+              <ChevronRight size={16} />
+            </div>
+          </div>
         </div>
       </header>
 
-      {/* 2. Search Area */}
-      <section className="mobile-search-area">
-        <div className="search-box-v3">
-          <Search size={20} className="text-slate-400" />
-          <input type="text" placeholder="Tìm món ăn, nguyên liệu..." />
-          <Filter size={18} className="text-slate-400" />
+      <section className="hero-section">
+        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200" alt="Hero" className="hero-banner" />
+        <div className="hero-content">
+          <h2>Kế hoạch ăn uống<br />Thông minh hơn</h2>
+          <p>Dựa trên nguyên liệu sẵn có trong tủ lạnh của bạn, chúng tôi đề xuất những thực đơn dinh dưỡng nhất.</p>
+          <button className="btn-view-plan" onClick={() => navigate("/meal-planner")}>Xem kế hoạch tuần</button>
         </div>
       </section>
 
-      {/* 3. Quick Filters */}
-      <div className="quick-filters-v3">
+      <div className="quick-filters">
         {filters.map(f => (
           <button 
             key={f.id} 
-            className={`filter-chip ${activeFilter === f.id ? 'active' : ''}`}
+            className={`filter-tag ${activeFilter === f.id ? 'active' : ''}`}
             onClick={() => setActiveFilter(f.id)}
           >
             {f.label}
@@ -96,66 +218,85 @@ function Home() {
         ))}
       </div>
 
-      {/* 4. Hero Banner */}
-      <section className="hero-v3">
-        <img 
-          src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800" 
-          alt="Morning Inspiration" 
-          className="hero-img"
-        />
-        <div className="hero-overlay">
-          <h2>Morning Inspiration</h2>
-          <div className="hero-meta">
-            <span><Clock size={12} /> 20 phút</span>
-            <span>•</span>
-            <span>Healthy Breakfast</span>
+      <div className="dashboard-content-grid">
+        <section className="trending-section">
+          <div className="section-header flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold flex items-center gap-2">
+              <TrendingUp size={22} className="text-primary" />
+              Món ngon thịnh hành
+            </h3>
+            <Link to="/recipes" className="view-all-btn">Xem tất cả</Link>
           </div>
-        </div>
-      </section>
-
-      {/* 5. Trending Recipes List */}
-      <section className="trending-v3">
-        <div className="trending-header-v3">
-          <h3>Món ngon thịnh hành</h3>
-          <Link to="/recipes" className="view-all-link">Xem tất cả</Link>
-        </div>
-
-        <div className="vertical-recipe-list">
-          {loading ? (
-            <div className="p-10 text-center text-slate-400 font-bold">Đang tìm món ngon...</div>
-          ) : (
-            recipes.slice(0, 5).map(recipe => (
-              <div key={recipe._id} className="recipe-card-v3">
-                <Link to={`/recipes/${recipe._id}`}>
-                  <img src={recipe.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600"} alt={recipe.title} className="card-img-v3" />
-                </Link>
-                <div className="card-body-v3">
-                  <div className="card-tags">
-                    <span className="tag-v3">{recipe.difficulty || "Dễ"}</span>
-                    {recipe.isPremium && <span className="tag-v3 flex items-center gap-1 bg-yellow-100 text-yellow-700"><Award size={10} /> Premium</span>}
-                  </div>
-                  <h4 translate="no">{recipe.title}</h4>
-                  <div className="card-footer-v3">
-                    <div className="flex gap-4">
-                      <div className="rating-v3">
-                        <Star size={14} fill="#fbbf24" stroke="#fbbf24" />
-                        <span>4.8</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs font-bold text-slate-400">
-                        <Clock size={12} />
-                        <span>{recipe.cookTime || 30}p</span>
-                      </div>
+          
+          <div className="recipe-grid">
+            {loading ? (
+              <p>Đang tải món ngon...</p>
+            ) : (
+              recipes.slice(0, 6).map(recipe => (
+                <div key={recipe._id} className="recipe-card">
+                  <div className="card-image-wrapper">
+                    <img src={recipe.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600"} alt={recipe.title} />
+                    <div className="card-badges">
+                      <span className="badge badge-difficulty">{recipe.difficulty || "Dễ"}</span>
+                      <span className="badge badge-time">{recipe.cookTime || 20}p</span>
                     </div>
-                    <button className="btn-start-v3" onClick={() => navigate(`/recipes/${recipe._id}`)}>
-                      Nấu ngay
+                  </div>
+                  <div className="recipe-card-content">
+                    <div className="card-rating">
+                      <Star size={14} fill="#fbbf24" stroke="#fbbf24" />
+                      <span>4.8</span>
+                    </div>
+                    <h4 translate="no">{recipe.title}</h4>
+                    <button className="btn-start-cooking" onClick={() => navigate(`/recipes/${recipe._id}`)}>
+                      Xem chi tiết
                     </button>
                   </div>
                 </div>
+              ))
+            )}
+          </div>
+        </section>
+
+        <aside className="dashboard-sidebar">
+          <div className="sidebar-widget">
+            <div className="widget-title">
+              <span>Dinh dưỡng hôm nay</span>
+              <Activity size={18} className="text-green-500" />
+            </div>
+            <div className="nutrition-stats">
+              <div className="stat-item">
+                <div className="stat-info">
+                  <span className="stat-label">Calories</span>
+                  <span className="stat-value">1,650 / 2,000 kcal</span>
+                </div>
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: '82%' }}></div>
+                </div>
               </div>
-            ))
-          )}
-        </div>
-      </section>
+              <div className="stat-item">
+                <div className="stat-info">
+                  <span className="stat-label">Protein</span>
+                  <span className="stat-value">65 / 80 g</span>
+                </div>
+                <div className="progress-bar">
+                  <div className="progress-fill" style={{ width: '70%', background: '#3b82f6' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="sidebar-widget">
+            <div className="widget-title">
+              <span>Tủ lạnh mini</span>
+              <Package size={18} className="text-primary" />
+            </div>
+            <p className="text-sm text-slate-500 mb-4">Bạn đang có 12 nguyên liệu sẵn sàng.</p>
+            <button className="view-all-btn w-full justify-center bg-slate-50 p-3 rounded-xl" onClick={() => navigate("/pantry")}>
+              Quản lý tủ lạnh <ChevronRight size={14} />
+            </button>
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
