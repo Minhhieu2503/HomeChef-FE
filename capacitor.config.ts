@@ -4,6 +4,9 @@ const config: CapacitorConfig = {
   appId: 'com.homechef.app',
   appName: 'HomeChef',
   webDir: 'dist',
+  server: {
+    cleartext: true
+  },
   plugins: {
     GoogleAuth: {
       scopes: ['profile', 'email'],
