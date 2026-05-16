@@ -1,23 +1,17 @@
 import api from "./api";
 
-export const getMealPlans = async (startDate, endDate) => {
+export const getMealPlan = async (startDate, endDate) => {
   const response = await api.get("/mealplan", {
     params: { start: startDate, end: endDate }
   });
   return response.data;
 };
 
-export const addMealToPlan = async (data) => {
-  const response = await api.post("/mealplan", data);
+export const scheduleMeal = async (date, slot, recipeId) => {
+  const response = await api.post("/mealplan", { date, slot, recipeId });
   return response.data;
 };
 
-export const removeMealFromPlan = async (day, slot) => {
-  const response = await api.delete(`/mealplan/${day}/${slot}`);
-  return response.data;
+export const unscheduleMeal = async (id) => {
+  await api.delete(`/mealplan/${id}`);
 };
-
-// Aliases for compatibility
-export const getMealPlan = getMealPlans;
-export const scheduleMeal = addMealToPlan;
-export const unscheduleMeal = removeMealFromPlan;

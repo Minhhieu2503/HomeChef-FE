@@ -1,255 +1,183 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getAllRecipes } from "../../services/recipeService";
 import { authService } from "../../services/auth.service";
-import { 
-  Search, 
-  Bell, 
-  TrendingUp, 
-  Clock, 
-  Flame, 
-  Star, 
-  ChevronRight,
-  Filter,
-  Activity,
-  Award,
-  Package,
-  ShoppingCart
-} from "lucide-react";
+import { getAllRecipes } from "../../services/recipeService";
+import { getDashboardOverview } from "../../services/dashboardService";
+import { updateShoppingItem } from "../../services/shoppingService";
+import { Bell, Search, Clock, Flame, ChevronRight, Star, CheckCircle2 } from "lucide-react";
 import "./Home.css";
 
-function Home() {
-  const navigate = useNavigate();
-  const [recipes, setRecipes] = useState([]);
-  const [loading, setLoading] = useState(true);
+function Dashboard() {
   const [user, setUser] = useState(null);
-  const [activeFilter, setActiveFilter] = useState("All");
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
+  const [allRecipes, setAllRecipes] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("All Recipes");
+  const [overview, setOverview] = useState({
+    nutrition: { calories: { current: 0, goal: 2000 }, protein: { current: 0, goal: 80 } },
+    groceries: []
+  });
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
-    window.addEventListener("resize", handleResize);
-    
-    const fetchData = async () => {
+    const loadDashboardData = async () => {
       try {
-        const [recipesRes, userRes] = await Promise.all([
-          getAllRecipes(),
-          authService.getMe()
-        ]);
-        setRecipes(recipesRes.recipes || []);
-        setUser(userRes.data);
-      } catch (err) {
-        console.error("Dashboard data fetch error:", err);
+        setLoading(true);
+        const profileRes = await authService.getMe();
+        if (profileRes.success) setUser(profileRes.data);
+
+        const recipesData = await getAllRecipes();
+        const recipesArray = Array.isArray(recipesData) ? recipesData : (recipesData?.recipes || []);
+        setAllRecipes(recipesArray);
+
+        const overviewData = await getDashboardOverview();
+        if (overviewData.success) {
+          setOverview(overviewData.data);
+        }
+      } catch (error) {
+        console.error("Dashboard loading error:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
-    
-    return () => window.removeEventListener("resize", handleResize);
+    loadDashboardData();
   }, []);
 
-  const filters = [
-    { id: "All", label: "Tất cả" },
-    { id: "Lunch", label: "Bữa trưa" },
-    { id: "Under 15 mins", label: "Dưới 15p" },
-    { id: "Diet", label: "Eat Clean" },
-    { id: "Quick", label: "Nhanh gọn" }
-  ];
+  const handleToggleGrocery = async (itemId, currentChecked) => {
+    try {
+      // Optimistic update
+      setOverview(prev => ({
+        ...prev,
+        groceries: prev.groceries.map(item => 
+          item._id === itemId ? { ...item, checked: !currentChecked } : item
+        )
+      }));
 
-  // --- RENDERING LOGIC ---
+      await updateShoppingItem(itemId, { checked: !currentChecked });
+    } catch (error) {
+      console.error("Failed to update grocery item:", error);
+      // Revert on error (optional, but good practice)
+      const overviewData = await getDashboardOverview();
+      if (overviewData.success) setOverview(overviewData.data);
+    }
+  };
 
-  if (isMobile) {
-    return (
-      <div className="dashboard mobile-version">
-        {/* 1. Mobile Custom Header */}
-        <header className="mobile-top-bar">
-          <div className="user-profile-v3" onClick={() => navigate("/profile")}>
-            <div className="user-avatar-wrapper">
-              <img 
-                src={user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"} 
-                alt="Avatar" 
-                className="user-avatar-main"
-              />
-            </div>
-            <div className="ml-3">
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Chào buổi sáng</p>
-              <h4 className="text-sm font-black text-slate-800">{user?.name?.split(' ')[0] || "Đầu bếp"} 👋</h4>
-            </div>
-          </div>
+  const filters = ["All Recipes", "Under 15 mins", "Low Carb", "High Protein", "Vegan"];
 
-          <div className="nutrition-pill">
-            <Activity size={14} className="text-green-500" />
-            <span>85% Mục tiêu</span>
-          </div>
-        </header>
+  const filteredRecipes = allRecipes.filter(recipe => {
+    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
+    if (activeFilter === "All Recipes") return matchesSearch;
+    if (activeFilter === "Under 15 mins") return matchesSearch && (recipe.cookTime || 20) < 15;
+    if (activeFilter === "Low Carb") return matchesSearch && (recipe.calories || 350) < 400; // Mock logic
+    if (activeFilter === "High Protein") return matchesSearch && (recipe.protein || 20) > 25; // Mock logic
+    if (activeFilter === "Vegan") return matchesSearch && recipe.tags?.includes("Vegan");
+    return matchesSearch;
+  });
 
-        {/* 2. Search Area */}
-        <section className="mobile-search-area">
-          <div className="search-box-v3">
-            <Search size={20} className="text-slate-400" />
-            <input type="text" placeholder="Tìm món ăn, nguyên liệu..." />
-            <Filter size={18} className="text-slate-400" />
-          </div>
-        </section>
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/recipes?search=${encodeURIComponent(searchTerm)}`);
+    }
+  };
 
-        {/* 3. Quick Filters */}
-        <div className="quick-filters-v3">
-          {filters.map(f => (
-            <button 
-              key={f.id} 
-              className={`filter-chip ${activeFilter === f.id ? 'active' : ''}`}
-              onClick={() => setActiveFilter(f.id)}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+  const trendingRecipes = filteredRecipes.slice(0, 4);
 
-        {/* 4. Hero Banner */}
-        <section className="hero-v3">
-          <img 
-            src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800" 
-            alt="Morning Inspiration" 
-            className="hero-img"
-          />
-          <div className="hero-overlay">
-            <h2>Morning Inspiration</h2>
-            <div className="hero-meta">
-              <span><Clock size={12} /> 20 phút</span>
-              <span>•</span>
-              <span>Healthy Breakfast</span>
-            </div>
-          </div>
-        </section>
-
-        {/* 5. Trending Recipes List */}
-        <section className="trending-v3">
-          <div className="trending-header-v3">
-            <h3>Món ngon thịnh hành</h3>
-            <Link to="/recipes" className="view-all-link">Xem tất cả</Link>
-          </div>
-
-          <div className="vertical-recipe-list">
-            {loading ? (
-              <div className="p-10 text-center text-slate-400 font-bold">Đang tìm món ngon...</div>
-            ) : (
-              recipes.slice(0, 5).map(recipe => (
-                <div key={recipe._id} className="recipe-card-v3">
-                  <Link to={`/recipes/${recipe._id}`}>
-                    <img src={recipe.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600"} alt={recipe.title} className="card-img-v3" />
-                  </Link>
-                  <div className="card-body-v3">
-                    <div className="card-tags">
-                      <span className="tag-v3">{recipe.difficulty || "Dễ"}</span>
-                      {recipe.isPremium && <span className="tag-v3 flex items-center gap-1 bg-yellow-100 text-yellow-700"><Award size={10} /> Premium</span>}
-                    </div>
-                    <h4 translate="no">{recipe.title}</h4>
-                    <div className="card-footer-v3">
-                      <div className="flex gap-4">
-                        <div className="rating-v3">
-                          <Star size={14} fill="#fbbf24" stroke="#fbbf24" />
-                          <span>4.8</span>
-                        </div>
-                        <div className="flex items-center gap-1 text-xs font-bold text-slate-400">
-                          <Clock size={12} />
-                          <span>{recipe.cookTime || 30}p</span>
-                        </div>
-                      </div>
-                      <button className="btn-start-v3" onClick={() => navigate(`/recipes/${recipe._id}`)}>
-                        Nấu ngay
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </section>
-      </div>
-    );
-  }
-
-  // --- DESKTOP VERSION ---
   return (
-    <div className="dashboard desktop-version">
+    <div className="dashboard">
+      {/* 1. Dashboard Header */}
       <header className="dashboard-header">
         <div className="header-left">
-          <h1>Chào mừng trở lại, {user?.name || "Đầu bếp"}!</h1>
+          <h1>Chào buổi sáng, {user?.name || "Chef"}!</h1>
           <p>Hôm nay bạn muốn nấu món gì?</p>
         </div>
         
         <div className="header-right">
-          <div className="smart-search">
-            <Search size={18} className="search-icon" />
-            <input type="text" placeholder="Tìm kiếm công thức thông minh..." />
-          </div>
+          <form className="smart-search" onSubmit={handleSearch}>
+            <Search size={18} className="text-muted" />
+            <input 
+              type="text" 
+              placeholder="Tìm kiếm công thức..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button type="submit" className="btn-search-header">Tìm</button>
+          </form>
+          
           <div className="header-actions">
-            <button className="notification-btn">
-              <Bell size={20} />
+            <button className="notification-btn" title="Thông báo" onClick={() => alert('Hiện tại bạn không có thông báo mới.')}>
+              <Bell size={24} />
               <span className="notification-badge"></span>
             </button>
-            <div className="user-profile-summary" onClick={() => navigate("/profile")}>
-              <img src={user?.avatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100"} alt="User" className="user-avatar-small" />
-              <ChevronRight size={16} />
+            <div className="user-profile-summary" onClick={() => navigate('/profile')}>
+              <img 
+                src={user?.avatar || "https://ui-avatars.com/api/?name=User&background=4ADE80&color=fff"} 
+                alt="Avatar" 
+                className="user-avatar-small"
+              />
             </div>
           </div>
         </div>
       </header>
 
+      {/* 2. Hero Section */}
       <section className="hero-section">
-        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200" alt="Hero" className="hero-banner" />
+        <img 
+          src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1600&q=80" 
+          alt="Inspiration" 
+          className="hero-banner"
+        />
         <div className="hero-content">
-          <h2>Kế hoạch ăn uống<br />Thông minh hơn</h2>
-          <p>Dựa trên nguyên liệu sẵn có trong tủ lạnh của bạn, chúng tôi đề xuất những thực đơn dinh dưỡng nhất.</p>
-          <button className="btn-view-plan" onClick={() => navigate("/meal-planner")}>Xem kế hoạch tuần</button>
+          <h2>Morning Inspiration</h2>
+          <p>Bắt đầu ngày mới với những công thức đầy năng lượng và dinh dưỡng.</p>
+          <button className="btn-view-plan" onClick={() => navigate('/meal-planner')}>View Daily Plan</button>
         </div>
       </section>
 
+      {/* 3. Quick Filters */}
       <div className="quick-filters">
-        {filters.map(f => (
+        {filters.map(filter => (
           <button 
-            key={f.id} 
-            className={`filter-tag ${activeFilter === f.id ? 'active' : ''}`}
-            onClick={() => setActiveFilter(f.id)}
+            key={filter} 
+            className={`filter-tag ${activeFilter === filter ? 'active' : ''}`}
+            onClick={() => setActiveFilter(filter)}
           >
-            {f.label}
+            {filter}
           </button>
         ))}
       </div>
 
+      {/* 4. Main Content Grid */}
       <div className="dashboard-content-grid">
+        {/* Trending Section */}
         <section className="trending-section">
-          <div className="section-header flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              <TrendingUp size={22} className="text-primary" />
-              Món ngon thịnh hành
-            </h3>
-            <Link to="/recipes" className="view-all-btn">Xem tất cả</Link>
+          <div className="section-header">
+            <h3>Trending Now</h3>
+            <Link to="/recipes" className="view-all-btn">Xem tất cả <ChevronRight size={16} /></Link>
           </div>
           
           <div className="recipe-grid">
             {loading ? (
               <p>Đang tải món ngon...</p>
             ) : (
-              recipes.slice(0, 6).map(recipe => (
+              trendingRecipes.map(recipe => (
                 <div key={recipe._id} className="recipe-card">
                   <div className="card-image-wrapper">
                     <img src={recipe.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600"} alt={recipe.title} />
                     <div className="card-badges">
-                      <span className="badge badge-difficulty">{recipe.difficulty || "Dễ"}</span>
-                      <span className="badge badge-time">{recipe.cookTime || 20}p</span>
+                      <span className="badge badge-difficulty">{recipe.difficulty || "Medium"}</span>
+                      <span className="badge badge-time">{recipe.cookTime || 20} min</span>
                     </div>
                   </div>
                   <div className="recipe-card-content">
                     <div className="card-rating">
-                      <Star size={14} fill="#fbbf24" stroke="#fbbf24" />
-                      <span>4.8</span>
+                      <Star size={14} fill="#fbbf24" />
+                      <span>{recipe.rating || "4.8"}</span>
                     </div>
-                    <h4 translate="no">{recipe.title}</h4>
-                    <button className="btn-start-cooking" onClick={() => navigate(`/recipes/${recipe._id}`)}>
-                      Xem chi tiết
-                    </button>
+                    <h4>{recipe.title}</h4>
+                    <Link to={`/recipes/${recipe._id}`}>
+                      <button className="btn-start-cooking">Start Cooking</button>
+                    </Link>
                   </div>
                 </div>
               ))
@@ -257,43 +185,72 @@ function Home() {
           </div>
         </section>
 
+        {/* 5. Dashboard Sidebar */}
         <aside className="dashboard-sidebar">
+          {/* Nutrition Widget */}
           <div className="sidebar-widget">
             <div className="widget-title">
-              <span>Dinh dưỡng hôm nay</span>
-              <Activity size={18} className="text-green-500" />
+              <span>Dinh dưỡng</span>
+              <span className="text-xs text-muted">Mục tiêu ngày</span>
             </div>
             <div className="nutrition-stats">
               <div className="stat-item">
                 <div className="stat-info">
                   <span className="stat-label">Calories</span>
-                  <span className="stat-value">1,650 / 2,000 kcal</span>
+                  <span className="stat-value">{overview.nutrition.calories.current.toLocaleString()} / {overview.nutrition.calories.goal.toLocaleString()} kcal</span>
                 </div>
                 <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: '82%' }}></div>
+                  <div 
+                    className="progress-fill" 
+                    style={{ width: `${Math.min(100, (overview.nutrition.calories.current / overview.nutrition.calories.goal) * 100)}%` }}
+                  ></div>
                 </div>
               </div>
               <div className="stat-item">
                 <div className="stat-info">
                   <span className="stat-label">Protein</span>
-                  <span className="stat-value">65 / 80 g</span>
+                  <span className="stat-value">{overview.nutrition.protein.current} / {overview.nutrition.protein.goal} g</span>
                 </div>
                 <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: '70%', background: '#3b82f6' }}></div>
+                  <div 
+                    className="progress-fill" 
+                    style={{ 
+                      width: `${Math.min(100, (overview.nutrition.protein.current / overview.nutrition.protein.goal) * 100)}%`, 
+                      backgroundColor: '#3B82F6' 
+                    }}
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Groceries Widget */}
           <div className="sidebar-widget">
             <div className="widget-title">
-              <span>Tủ lạnh mini</span>
-              <Package size={18} className="text-primary" />
+              <span>Groceries</span>
+              <Link to="/shopping-list" className="text-xs text-primary">Mua gấp</Link>
             </div>
-            <p className="text-sm text-slate-500 mb-4">Bạn đang có 12 nguyên liệu sẵn sàng.</p>
-            <button className="view-all-btn w-full justify-center bg-slate-50 p-3 rounded-xl" onClick={() => navigate("/pantry")}>
-              Quản lý tủ lạnh <ChevronRight size={14} />
-            </button>
+            <div className="grocery-list-mini">
+              {overview.groceries.length > 0 ? (
+                overview.groceries.map(item => (
+                  <div key={item._id} className="grocery-item-mini">
+                    <input 
+                      type="checkbox" 
+                      checked={item.checked} 
+                      onChange={() => handleToggleGrocery(item._id, item.checked)}
+                    />
+                    <span style={{ textDecoration: item.checked ? 'line-through' : 'none', opacity: item.checked ? 0.6 : 1 }}>
+                      {item.name}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-muted py-2">Danh sách trống</p>
+              )}
+            </div>
+            <Link to="/shopping-list" className="view-all-btn">
+              Xem toàn bộ danh sách <ChevronRight size={14} />
+            </Link>
           </div>
         </aside>
       </div>
@@ -301,4 +258,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Dashboard;

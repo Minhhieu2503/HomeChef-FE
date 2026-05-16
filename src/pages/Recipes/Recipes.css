@@ -230,13 +230,6 @@
   opacity: 1;
 }
 
-@media (max-width: 768px) {
-  .recipe-card-discovery {
-    min-width: 220px;
-    max-width: none;
-  }
-}
-
 .card-image-discovery {
   height: 180px;
   position: relative;
@@ -322,103 +315,16 @@
   }
   
   .filter-sidebar {
-    position: fixed;
-    top: 0;
-    right: 0;
-    width: 320px;
-    height: 100vh;
-    z-index: 2000;
-    transform: translateX(100%);
-    transition: transform 0.3s ease-in-out;
-    box-shadow: -10px 0 30px rgba(0,0,0,0.1);
-    border-left: 1px solid var(--color-border-light);
-    border-bottom: none;
-  }
-
-  .filter-sidebar.open {
-    transform: translateX(0);
+    width: 100%;
+    height: auto;
+    border-left: none;
+    border-bottom: 1px solid var(--color-border-light);
+    position: static;
   }
   
   .discovery-main {
     padding: 1.5rem;
-    gap: 2.5rem;
   }
-
-  .recipe-of-day-banner {
-    height: 300px;
-  }
-
-  .banner-content h2 {
-    font-size: 1.5rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .recipes-grid-discovery {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-  
-  .discovery-search-form {
-    padding-right: 0.5rem;
-  }
-  
-  .discovery-search-form .btn-search-header {
-    display: none; /* Hide 'Tim' text on very small screens or keep it compact */
-  }
-
-  .btn-filter-toggle-mobile {
-    display: flex !important;
-  }
-}
-
-/* Mobile Filter Elements */
-.btn-filter-toggle-mobile {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  color: var(--color-primary);
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.filter-sidebar-header {
-  display: none;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-@media (max-width: 1200px) {
-  .filter-sidebar-header {
-    display: flex;
-  }
-}
-
-.btn-close-filters {
-  background: none;
-  border: none;
-  color: var(--color-text-muted);
-  cursor: pointer;
-}
-
-.filter-overlay-mobile {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(4px);
-  z-index: 1900;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 /* Empty Results */

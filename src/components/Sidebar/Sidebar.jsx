@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { X } from "lucide-react";
 import { authService } from "../../services/auth.service";
 import { getAllRecipes } from "../../services/recipeService";
 import "./Sidebar.css";
@@ -12,7 +11,7 @@ const navItems = [
   { path: "/pantry", label: "Tủ lạnh", icon: "🥬" },
 ];
 
-function Sidebar({ isOpen, onClose }) {
+function Sidebar() {
   const location = useLocation();
   const [userName, setUserName] = useState("Đang tải...");
   const [trayRecipes, setTrayRecipes] = useState([]);
@@ -46,16 +45,13 @@ function Sidebar({ isOpen, onClose }) {
   }, [location.pathname]);
 
   return (
-    <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
+    <aside className="sidebar">
       <div className="sidebar-brand">
         <div className="brand-logo">🍳</div>
         <div className="brand-info">
           <span className="brand-name">Đầu bếp tại gia</span>
           <span className="brand-subtitle">Urban Culinary</span>
         </div>
-        <button className="sidebar-close-mobile" onClick={onClose}>
-          <X size={24} />
-        </button>
       </div>
 
       <nav className="sidebar-nav">
@@ -67,9 +63,6 @@ function Sidebar({ isOpen, onClose }) {
                 className={({ isActive }) =>
                   `nav-item ${isActive ? "active" : ""}`
                 }
-                onClick={() => {
-                  if (window.innerWidth <= 768) onClose();
-                }}
               >
                 <span className="nav-icon">{item.icon}</span>
                 <span className="nav-label">{item.label}</span>
