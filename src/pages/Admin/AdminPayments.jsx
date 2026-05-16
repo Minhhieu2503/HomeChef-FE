@@ -23,17 +23,20 @@ const AdminPayments = () => {
         const data = response.data;
         setTransactions(data);
 
-        // Calculate stats
-        const today = new Date().toISOString().split('T')[0];
+        // Calculate stats using local timezone strings to ensure UI matches logic
+        const todayStr = new Date().toLocaleDateString('vi-VN');
         let todayRev = 0;
         let pending = 0;
 
         data.forEach(tx => {
-          const txDate = new Date(tx.createdAt).toISOString().split('T')[0];
-          if (tx.status === 'success' && txDate === today) {
-            todayRev += tx.amount;
+          const txDateStr = new Date(tx.createdAt).toLocaleDateString('vi-VN');
+          // Support both lowercase and any potential uppercase status 
+          const status = (tx.status || "").toLowerCase();
+          
+          if (status === 'success' && txDateStr === todayStr) {
+            todayRev += Number(tx.amount) || 0;
           }
-          if (tx.status === 'pending') {
+          if (status === 'pending') {
             pending++;
           }
         });
