@@ -11,6 +11,18 @@
   z-index: 1000;
   padding: 0;
   overflow: hidden;
+  transition: transform 0.3s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+  }
+  
+  .sidebar.open {
+    transform: translateX(0);
+  }
 }
 
 .sidebar-brand {
@@ -220,4 +232,84 @@
 .user-role {
   font-size: 0.7rem;
   color: #94a3b8;
+}
+
+/* --- Mobile Specific Elements --- */
+.sidebar-close-mobile {
+  display: none;
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-left: auto;
+}
+
+@media (max-width: 768px) {
+  .sidebar-close-mobile {
+    display: block;
+  }
+  
+  .sidebar-brand {
+    padding: 1.5rem 1.25rem;
+    justify-content: flex-start;
+  }
+}
+
+/* Global Mobile UI (defined in App.jsx but styled here) */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: white;
+  padding: 0 1rem;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid #f1f5f9;
+  z-index: 900;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.menu-toggle {
+  background: none;
+  border: none;
+  color: #064e3b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-brand {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: #064e3b;
+}
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 950;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+  }
+  
+  /* Add margin to top of main content to account for fixed mobile header */
+  .main-content {
+    margin-top: 60px;
+  }
 }

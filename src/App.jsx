@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import Sidebar from "./components/Sidebar/Sidebar";
 import Dashboard from "./pages/Home/Home";
 import MealPlanner from "./pages/MealPlanner/MealPlanner";
@@ -56,6 +58,11 @@ const AdminRoute = ({ children }) => {
 };
 
 function App() {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const closeSidebar = () => setIsSidebarOpen(false);
+
   return (
     <Router>
       <Routes>
@@ -80,8 +87,23 @@ function App() {
           path="/*"
           element={
             <ProtectedRoute>
-              <div className="app-layout">
-                <Sidebar />
+              <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : ''}`}>
+                {/* Mobile Header - Only visible on small screens */}
+                <header className="mobile-header">
+                  <button className="menu-toggle" onClick={toggleSidebar}>
+                    <Menu size={24} />
+                  </button>
+                  <div className="mobile-brand">
+                    <span>🍳 HomeChef</span>
+                  </div>
+                  <div style={{ width: 40 }}></div>
+                </header>
+
+                {/* Overlay to close sidebar on click */}
+                {isSidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar}></div>}
+
+                <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
+                
                 <main className="main-content">
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
