@@ -27,6 +27,25 @@
   height: 120px;
 }
 
+.avatar-upload-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.3s;
+  z-index: 5;
+}
+
+.avatar-large-wrapper:hover .avatar-upload-overlay {
+  opacity: 1;
+}
+
 .avatar-large {
   width: 100%;
   height: 100%;

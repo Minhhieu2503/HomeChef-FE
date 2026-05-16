@@ -4,7 +4,8 @@ import { authService } from "../../services/auth.service";
 import { authUtils } from "../../utils/authUtils";
 import {
   User, Shield, Mail, CreditCard, Flame, UtensilsCrossed,
-  Settings, ChevronRight, Edit3, Target, PieChart, Info, X
+  Settings, ChevronRight, Edit3, Target, PieChart, Info, X,
+  Camera, Upload
 } from "lucide-react";
 import "./Profile.css";
 
@@ -44,11 +45,29 @@ function Profile() {
       if (res.success) {
         setUser(res.data);
         setIsEditModalOpen(false);
-        toast.success("Đã cập nhật thông tin!");
       }
     } catch (err) {
       console.error("Lỗi cập nhật:", err);
-      toast.error("Không thể cập nhật thông tin.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("avatar", file);
+
+    try {
+      setIsSaving(true);
+      const res = await authService.uploadAvatar(formData);
+      if (res.success) {
+        setUser(prev => ({ ...prev, avatar: res.data.avatar }));
+      }
+    } catch (err) {
+      console.error("Lỗi upload avatar:", err);
     } finally {
       setIsSaving(false);
     }
@@ -99,6 +118,15 @@ function Profile() {
             alt="Profile"
             className="avatar-large"
           />
+          <label className="avatar-upload-overlay">
+            <Camera size={24} />
+            <input 
+              type="file" 
+              accept="image/*" 
+              onChange={handleAvatarChange} 
+              style={{ display: 'none' }}
+            />
+          </label>
           <span className="pro-badge">Pro Member</span>
         </div>
 
