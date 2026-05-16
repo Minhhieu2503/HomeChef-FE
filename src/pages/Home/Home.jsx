@@ -66,15 +66,15 @@ function Dashboard() {
     }
   };
 
-  const filters = ["All Recipes", "Under 15 mins", "Low Carb", "High Protein", "Vegan"];
+  const filters = ["Tất cả", "Dưới 15 phút", "Ít Tinh bột", "Nhiều Đạm", "Chay"];
 
   const filteredRecipes = allRecipes.filter(recipe => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase());
-    if (activeFilter === "All Recipes") return matchesSearch;
-    if (activeFilter === "Under 15 mins") return matchesSearch && (recipe.cookTime || 20) < 15;
-    if (activeFilter === "Low Carb") return matchesSearch && (recipe.calories || 350) < 400; // Mock logic
-    if (activeFilter === "High Protein") return matchesSearch && (recipe.protein || 20) > 25; // Mock logic
-    if (activeFilter === "Vegan") return matchesSearch && recipe.tags?.includes("Vegan");
+    if (activeFilter === "Tất cả") return matchesSearch;
+    if (activeFilter === "Dưới 15 phút") return matchesSearch && (recipe.cookTime || 20) < 15;
+    if (activeFilter === "Ít Tinh bột") return matchesSearch && (recipe.calories || 350) < 400; 
+    if (activeFilter === "Nhiều Đạm") return matchesSearch && (recipe.protein || 20) > 25; 
+    if (activeFilter === "Chay") return matchesSearch && recipe.tags?.includes("Vegan");
     return matchesSearch;
   });
 
@@ -93,7 +93,7 @@ function Dashboard() {
       {!Capacitor.isNativePlatform() ? (
         <header className="dashboard-header">
           <div className="header-left">
-            <h1>Xin chào, {user?.name || "Chef"}!</h1>
+            <h1>Xin chào, {user?.name || "Đầu bếp"}!</h1>
             <p>Hôm nay bạn muốn nấu món gì?</p>
           </div>
 
@@ -135,18 +135,18 @@ function Dashboard() {
                 onClick={() => navigate('/profile')}
               />
               <div className="mobile-greeting-text">
-                <span className="welcome-sub">Welcome back,</span>
-                <span className="user-name-pro">{user?.name?.split(' ')[0] || "Chef"}!</span>
+                <span className="welcome-sub">Chào mừng trở lại,</span>
+                <span className="user-name-pro">{user?.name?.split(' ')[0] || "Đầu bếp"}!</span>
               </div>
             </div>
             <div className="mobile-nutrition-circle" onClick={() => navigate('/meal-planner')}>
               <div className="circle-inner">
-                <span className="circle-percent">85%</span>
-                <span className="circle-label">Goal</span>
+                <span className="circle-percent">{Math.round((overview.nutrition.calories.current / overview.nutrition.calories.goal) * 100) || 0}%</span>
+                <span className="circle-label">Mục tiêu</span>
               </div>
               <svg className="circle-svg">
                 <circle cx="22" cy="22" r="20" className="circle-bg" />
-                <circle cx="22" cy="22" r="20" className="circle-fill" style={{ strokeDasharray: "107, 126" }} />
+                <circle cx="22" cy="22" r="20" className="circle-fill" style={{ strokeDasharray: `${Math.min(100, (overview.nutrition.calories.current / overview.nutrition.calories.goal) * 100) * 1.25}, 126` }} />
               </svg>
             </div>
           </div>
@@ -170,9 +170,9 @@ function Dashboard() {
           className="hero-banner"
         />
         <div className="hero-content">
-          <h2>Morning Inspiration</h2>
+          <h2>Cảm Hứng Mỗi Ngày</h2>
           <p>Bắt đầu ngày mới với những công thức đầy năng lượng và dinh dưỡng.</p>
-          <button className="btn-view-plan" onClick={() => navigate('/meal-planner')}>View Daily Plan</button>
+          <button className="btn-view-plan" onClick={() => navigate('/meal-planner')}>Xem kế hoạch hôm nay</button>
         </div>
       </section>
 
@@ -194,7 +194,7 @@ function Dashboard() {
         {/* Trending Section */}
         <section className="trending-section">
           <div className="section-header">
-            <h3>Trending Now</h3>
+            <h3>Thịnh hành hiện nay</h3>
             <Link to="/recipes" className="view-all-btn">Xem tất cả <ChevronRight size={16} /></Link>
           </div>
 
@@ -218,7 +218,7 @@ function Dashboard() {
                     </div>
                     <h4>{recipe.title}</h4>
                     <Link to={`/recipes/${recipe._id}`}>
-                      <button className="btn-start-cooking">Start Cooking</button>
+                      <button className="btn-start-cooking">Bắt đầu nấu</button>
                     </Link>
                   </div>
                 </div>
@@ -269,7 +269,7 @@ function Dashboard() {
           {/* Groceries Widget */}
           <div className="sidebar-widget">
             <div className="widget-title">
-              <span>Groceries</span>
+              <span>Danh sách đi chợ</span>
               <Link to="/shopping-list" className="text-xs text-primary">Mua gấp</Link>
             </div>
             <div className="grocery-list-mini">

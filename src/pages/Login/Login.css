@@ -4,6 +4,7 @@
   width: 100%;
   background: white;
   overflow: hidden;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 /* --- LEFT SIDE: VISUAL (Vibrant & Deep) --- */
@@ -208,7 +209,14 @@
   color: #10b981; /* Làm icon nổi bật hơn */
 }
 
+.login-actions-wrapper {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
 .btn-login-premium {
+  flex: 1;
   background: linear-gradient(to right, #10b981, #059669);
   color: white;
   padding: 1rem;
@@ -230,6 +238,26 @@
   box-shadow: 0 15px 25px -5px rgba(16, 185, 129, 0.5);
 }
 
+.btn-faceid {
+  width: 3.5rem;
+  height: 3.5rem;
+  background: #f0fdf4;
+  color: #10b981;
+  border: 2px solid #d1fae5;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.btn-faceid:hover {
+  background: #d1fae5;
+  transform: translateY(-2px);
+}
+
 /* --- GOOGLE LOGIN (Strong Highlight) --- */
 .social-login {
   margin-top: 0.5rem;
@@ -248,6 +276,11 @@
   gap: 1rem;
   cursor: pointer;
   transition: 0.2s;
+}
+
+.btn-google-native img {
+  width: 24px;
+  height: 24px;
 }
 
 .btn-google-native:hover {
@@ -298,7 +331,83 @@
 }
 
 @media (max-width: 1024px) {
-  .login-visual-section { display: none; }
-  .login-form-section { padding: 1rem; }
-  .form-container { max-width: 100%; }
+  .login-split-page {
+    flex-direction: column;
+    min-height: 100vh;
+    background: #f8fafc;
+    overflow-y: auto;
+  }
+  
+  .login-visual-section {
+    display: flex;
+    flex: none;
+    height: 30vh;
+    padding: 1.5rem;
+    align-items: flex-start;
+    justify-content: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .branding-content h1, 
+  .branding-content p, 
+  .feature-badges {
+    display: none; /* Ẩn text thừa để tối ưu không gian mobile */
+  }
+  
+  .brand-logo {
+    margin-bottom: 0;
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+  }
+  
+  .login-form-section {
+    flex: 1;
+    background: transparent;
+    padding: 0;
+    margin-top: -30px; /* Chồng lên hình ảnh 1 chút */
+    position: relative;
+    z-index: 10;
+    align-items: flex-start;
+  }
+  
+  .form-container {
+    width: 100%;
+    max-width: 100%;
+    min-height: calc(70vh + 30px);
+    border-radius: 30px 30px 0 0; /* Card bo góc lớn hiện đại */
+    padding: 2rem 1.5rem 3rem 1.5rem;
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+    background: white;
+  }
+
+  .form-header h2 {
+    font-size: 1.6rem;
+  }
+
+  /* Kích thước hợp lý hơn cho mobile */
+  .input-wrapper input {
+    padding: 1rem 3rem 1rem 2.8rem;
+    font-size: 0.95rem;
+    border-radius: 14px;
+  }
+  
+  .btn-login-premium {
+    padding: 1rem;
+    font-size: 1rem;
+    border-radius: 14px;
+  }
+
+  .btn-faceid {
+    width: 3.2rem;
+    height: 3.2rem;
+    border-radius: 14px;
+  }
+  
+  .btn-google-native {
+    padding: 0.9rem;
+    border-radius: 14px;
+    font-size: 0.95rem;
+  }
 }

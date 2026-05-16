@@ -7,8 +7,10 @@ import { authService } from "../../services/auth.service";
 import api from "../../services/api";
 import { authUtils } from "../../utils/authUtils";
 import { useToast } from "../../context/ToastContext";
-import { LogIn, Mail, Lock, ChefHat, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { LogIn, Mail, Lock, ChefHat, ArrowRight, Eye, EyeOff, ScanFace } from "lucide-react";
 import "./Login.css";
+
+
 
 function Login() {
   const toast = useToast();
@@ -24,7 +26,9 @@ function Login() {
       const native = Capacitor.isNativePlatform();
       setIsNative(native);
       if (native) {
-        GoogleAuth.initialize();
+        GoogleAuth.initialize({
+          clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        });
       }
     };
     checkPlatform();
@@ -48,7 +52,10 @@ function Login() {
         }
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || `Lỗi mạng (Thử kết nối tới: ${api.defaults.baseURL})`);
+      const errorMsg = error.response?.data?.message || error.message || "Lỗi mạng không xác định";
+      const status = error.response?.status ? `[${error.response.status}]` : "[Network Error]";
+      toast.error(`${status} ${errorMsg} (Target: ${api.defaults.baseURL})`);
+      console.error("Login Error Details:", error);
     } finally {
       setLoading(false);
     }
@@ -99,6 +106,10 @@ function Login() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFaceID = () => {
+    toast.info("Đăng nhập sinh trắc học đang được phát triển.");
   };
 
   return (
@@ -174,14 +185,21 @@ function Login() {
               </div>
             </div>
 
-            <button type="submit" className="btn-login-premium" disabled={loading}>
-              {loading ? "Đang xử lý..." : (
-                <>
-                  <span>BẮT ĐẦU NẤU ĂN</span>
-                  <ArrowRight size={18} />
-                </>
+            <div className="login-actions-wrapper">
+              <button type="submit" className="btn-login-premium" disabled={loading}>
+                {loading ? "Đang xử lý..." : (
+                  <>
+                    <span>BẮT ĐẦU NẤU ĂN</span>
+                    <ArrowRight size={18} />
+                  </>
+                )}
+              </button>
+              {isNative && (
+                <button type="button" className="btn-faceid" onClick={handleFaceID} title="Đăng nhập FaceID/Vân tay">
+                  <ScanFace size={24} />
+                </button>
               )}
-            </button>
+            </div>
           </form>
 
           <div className="divider">

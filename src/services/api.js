@@ -2,7 +2,7 @@ import axios from "axios";
 import { authUtils } from "../utils/authUtils";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://homechef-be.onrender.com/api",
+  baseURL: import.meta.env.VITE_API_URL || "https://homechef-be-earg.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
