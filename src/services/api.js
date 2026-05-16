@@ -1,8 +1,21 @@
 import axios from "axios";
 import { authUtils } from "../utils/authUtils";
+import { Capacitor } from "@capacitor/core";
+
+let baseURL = import.meta.env.VITE_API_URL || "https://homechef-be.onrender.com/api";
+
+// Auto-detect and fix local/emulator API routing if pointing to the dead Render URL
+if (baseURL.includes("homechef-be.onrender.com")) {
+  if (Capacitor.isNativePlatform()) {
+    // Android emulator alias to host machine's localhost
+    baseURL = "http://10.0.2.2:5000/api";
+  } else if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+    baseURL = "http://localhost:5000/api";
+  }
+}
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "https://homechef-be.onrender.com/api",
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },
