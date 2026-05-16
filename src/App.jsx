@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 import Sidebar from "./components/Sidebar/Sidebar";
 import TopHeader from "./components/Navigation/TopHeader";
 import BottomNav from "./components/Navigation/BottomNav";
@@ -28,19 +29,28 @@ const ProtectedRoute = ({ children }) => {
   const isAdmin = authUtils.isAdmin();
 
   if (!isLoggedIn) {
-    if (!hasSeenOnboarding) return <Navigate to="/onboarding" replace />;
+    if (!hasSeenOnboarding) {
+      return <Navigate to="/onboarding" replace />;
+    }
     return <Navigate to="/login" replace />;
   }
 
-  if (!hasSeenOnboarding) localStorage.setItem("hasSeenOnboarding", "true");
-  if (isAdmin) return <Navigate to="/admin" replace />;
+  if (!hasSeenOnboarding) {
+    localStorage.setItem("hasSeenOnboarding", "true");
+  }
+
+  if (isAdmin) {
+    return <Navigate to="/admin" replace />;
+  }
 
   return children;
 };
 
 const AdminRoute = ({ children }) => {
   const isAdmin = authUtils.isAdmin();
-  if (!isAdmin) return <Navigate to="/" replace />;
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
   return children;
 };
 
@@ -48,6 +58,7 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
 
   useEffect(() => {
@@ -78,16 +89,19 @@ function App() {
           element={
             <ProtectedRoute>
               <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : ''} ${isMobile ? 'is-mobile' : 'is-desktop'}`}>
+                {/* Only show mobile header on mobile devices */}
                 {isMobile && <TopHeader />}
 
+                {/* Sidebar Overlay */}
                 {isSidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar}></div>}
 
+                {/* Only show sidebar on desktop or if specifically opened on mobile */}
                 {(!isMobile || isSidebarOpen) && <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />}
                 
                 <main className="main-content">
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
-                    <Route path="/meal-planner" element={<MealPlanner isMobile={isMobile} />} />
+                    <Route path="/meal-planner" element={<MealPlanner />} />
                     <Route path="/recipes" element={<Recipes />} />
                     <Route path="/recipes/:id" element={<RecipeDetail />} />
                     <Route path="/pantry" element={<Pantry />} />
@@ -99,6 +113,7 @@ function App() {
                   </Routes>
                 </main>
 
+                {/* Only show bottom nav on mobile */}
                 {isMobile && <BottomNav />}
               </div>
             </ProtectedRoute>

@@ -128,7 +128,7 @@ body {
 }
 
 /* ============ Responsive Media Queries ============ */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .app-layout {
     flex-direction: column;
   }
@@ -141,24 +141,6 @@ body {
   
   h1 { font-size: 1.5rem; }
   h2 { font-size: 1.25rem; }
-}
-
-/* Fallback for JS-driven mobile class */
-.app-layout.is-mobile .main-content {
-  margin-left: 0 !important;
-  max-width: 100vw !important;
-}
-
-.app-layout.is-mobile .sidebar {
-  display: none !important;
-}
-
-.app-layout.is-mobile .bottom-nav {
-  display: flex !important;
-}
-
-.app-layout.is-desktop .bottom-nav {
-  display: none !important;
 }
 
 /* ============ Typography ============ */
@@ -429,7 +411,7 @@ img { max-width: 100%; display: block; }
   border: 2px solid #059669;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .premium-header {
     margin: -1.25rem -1rem 0;
     padding: 1.25rem 1.25rem 2.5rem;
