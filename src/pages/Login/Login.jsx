@@ -80,6 +80,7 @@ function Login() {
   const handleNativeGoogleLogin = async () => {
     setLoading(true);
     try {
+      try { await GoogleAuth.signOut(); } catch (e) {}
       const googleUser = await GoogleAuth.signIn();
       const idToken = googleUser.authentication.idToken;
       if (!idToken) throw new Error("No ID Token received");
@@ -176,7 +177,7 @@ function Login() {
             <button type="submit" className="btn-login-premium" disabled={loading}>
               {loading ? "Đang xử lý..." : (
                 <>
-                  <span>BẮT ĐẦU NẤU ĂN (Local)</span>
+                  <span>BẮT ĐẦU NẤU ĂN</span>
                   <ArrowRight size={18} />
                 </>
               )}

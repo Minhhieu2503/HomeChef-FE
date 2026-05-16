@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { getPantryItems, addPantryItem, updatePantryItem, deletePantryItem, scanIngredientImage } from "../../services/pantryService";
 import { getAllRecipes } from "../../services/recipeService";
 import { authService } from "../../services/auth.service";
@@ -259,19 +260,69 @@ function Pantry() {
     <div className="pantry-container">
       {/* Inventory Main Content */}
       <main className="inventory-main">
-        <div className="inventory-header">
-          <h2 translate="no">Tủ đựng thức ăn của tôi</h2>
-          <div className="header-actions">
-            <button className="btn-scan-fridge" onClick={() => setIsScanModalOpen(true)}>
-              <Camera size={18} />
-              <span>Quét Tủ Lạnh / Hóa Đơn</span>
-              <Sparkles size={14} className="scan-sparkle" />
-            </button>
-            <button className="btn-view-plan flex items-center gap-2" onClick={() => setIsModalOpen(true)}>
-              <Plus size={18} /> Thêm mục
-            </button>
+        {!Capacitor.isNativePlatform() ? (
+          <div className="inventory-header">
+            <h2 translate="no">Tủ đựng thức ăn của tôi</h2>
+            <div className="header-actions">
+              <button className="btn-scan-fridge" onClick={() => setIsScanModalOpen(true)}>
+                <Camera size={18} />
+                <span>Quét Tủ Lạnh / Hóa Đơn</span>
+                <Sparkles size={14} className="scan-sparkle" />
+              </button>
+              <button className="btn-view-plan flex items-center gap-2" onClick={() => setIsModalOpen(true)}>
+                <Plus size={18} /> Thêm mục
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="mobile-pantry-header">
+            <div className="pantry-title-row">
+              <h2>My Pantry</h2>
+              <div className="pantry-header-icons">
+                <button className="icon-circle-btn" onClick={() => setIsScanModalOpen(true)}><Camera size={20} /></button>
+              </div>
+            </div>
+            
+            {/* Fridge Pulse Grid */}
+            <div className="fridge-pulse-grid">
+              <div className="pulse-item">
+                <div className="pulse-info">
+                  <span className="pulse-label">Produce</span>
+                  <span className="pulse-val">75%</span>
+                </div>
+                <div className="pulse-bar"><div className="pulse-fill" style={{ width: '75%', backgroundColor: '#4ADE80' }}></div></div>
+              </div>
+              <div className="pulse-item">
+                <div className="pulse-info">
+                  <span className="pulse-label">Dairy</span>
+                  <span className="pulse-val">40%</span>
+                </div>
+                <div className="pulse-bar"><div className="pulse-fill" style={{ width: '40%', backgroundColor: '#3B82F6' }}></div></div>
+              </div>
+              <div className="pulse-item">
+                <div className="pulse-info">
+                  <span className="pulse-label">Protein</span>
+                  <span className="pulse-val">90%</span>
+                </div>
+                <div className="pulse-bar"><div className="pulse-fill" style={{ width: '90%', backgroundColor: '#F97316' }}></div></div>
+              </div>
+              <div className="pulse-item">
+                <div className="pulse-info">
+                  <span className="pulse-label">Grains</span>
+                  <span className="pulse-val">60%</span>
+                </div>
+                <div className="pulse-bar"><div className="pulse-fill" style={{ width: '60%', backgroundColor: '#FACC15' }}></div></div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* FAB for Mobile */}
+        {Capacitor.isNativePlatform() && (
+          <button className="mobile-fab" onClick={() => setIsModalOpen(true)}>
+            <Plus size={32} />
+          </button>
+        )}
 
         <div className="ingredient-cards-stack">
           {loading ? (

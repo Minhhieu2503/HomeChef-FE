@@ -4,4 +4,6 @@
     <string name="title_activity_main">HomeChef</string>
     <string name="package_name">com.homechef.app</string>
     <string name="custom_url_scheme">com.homechef.app</string>
+    <string name="server_client_id">41936203262-j50v83fnv10eohucf993qk20ouha1mfq.apps.googleusercontent.com</string>
+    <string name="client_id">41936203262-s2rm8obu9qq9ja0o4vss9s3a15d38t86.apps.googleusercontent.com</string>
 </resources>

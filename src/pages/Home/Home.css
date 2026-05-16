@@ -413,43 +413,181 @@
   }
 }
 
-@media (max-width: 768px) {
-  .dashboard-header {
-    padding: 1rem 1.25rem;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-  
-  .header-right {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 1rem;
-  }
-  
-  .dashboard-header .smart-search {
-    width: 100%;
-  }
-  
-  .header-actions {
-    justify-content: flex-end;
-  }
-  
-  .hero-section {
-    margin: 0 1.25rem;
-    height: 300px;
-  }
-  
-  .hero-content h2 {
-    font-size: 2rem;
-  }
-  
-  .quick-filters {
-    margin: 0 1.25rem;
-  }
-  
-  .dashboard-content-grid {
-    margin: 0 1.25rem 2rem;
-  }
+/* --- Mobile App Specific Overrides --- */
+.is-native-app .dashboard-header {
+  display: none;
 }
+
+.mobile-dashboard-header {
+  padding: env(safe-area-inset-top, 20px) 1.5rem 1.5rem;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.mobile-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mobile-user-greeting {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mobile-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.mobile-greeting-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.welcome-sub {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.user-name-pro {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.mobile-nutrition-circle {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle-inner {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.circle-percent {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--color-primary-dark);
+}
+
+.circle-label {
+  font-size: 0.4rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.circle-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.circle-bg {
+  fill: none;
+  stroke: var(--color-border-light);
+  stroke-width: 3;
+}
+
+.circle-fill {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.mobile-smart-search {
+  display: flex;
+  align-items: center;
+  background: var(--color-bg);
+  padding: 0.8rem 1rem;
+  border-radius: 16px;
+  gap: 0.75rem;
+}
+
+.mobile-smart-search input {
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 0.95rem;
+  flex: 1;
+}
+
+.is-native-app .hero-section {
+  height: 180px;
+  margin: 0 1.5rem;
+  border-radius: 24px;
+}
+
+.is-native-app .hero-content {
+  padding: 1.5rem;
+}
+
+.is-native-app .hero-content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.is-native-app .hero-content p {
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.is-native-app .btn-view-plan {
+  padding: 0.6rem 1.2rem;
+  font-size: 0.85rem;
+  border-radius: 12px;
+}
+
+.is-native-app .quick-filters {
+  margin: 0 1.5rem;
+}
+
+.is-native-app .trending-section {
+  padding: 0 1.5rem;
+}
+
+.is-native-app .recipe-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.is-native-app .recipe-card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+.is-native-app .card-image-wrapper {
+  height: 220px;
+}
+
+.is-native-app .btn-start-cooking {
+  background-color: var(--color-accent);
+  padding: 0.9rem;
+  border-radius: 14px;
+  font-size: 1rem;
+}
+
+.is-native-app .dashboard-sidebar {
+  display: none;
+}
+

@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { getAllRecipes } from "../../services/recipeService";
 import { authService } from "../../services/auth.service";
 import { getMealPlan, scheduleMeal, unscheduleMeal } from "../../services/mealPlanService";
@@ -261,141 +262,215 @@ function MealPlanner() {
   }
 
   return (
-    <div className="planner-v2-container">
-      {/* Header */}
-      <header className="planner-header">
-        <h1 className="header-title">Lịch trình hàng tuần</h1>
-        <div className="header-actions">
-          <button className="notif-btn"><Bell size={20} /></button>
-          <div className="user-profile" onClick={() => navigate('/profile')}>
-            <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="Avatar" />
+    <div className={`planner-v2-container ${Capacitor.isNativePlatform() ? "mobile-planner" : ""}`}>
+      {/* 1. Header (Mobile vs Web) */}
+      {!Capacitor.isNativePlatform() ? (
+        <header className="planner-header">
+          <h1 className="header-title">Lịch trình hàng tuần</h1>
+          <div className="header-actions">
+            <button className="notif-btn"><Bell size={20} /></button>
+            <div className="user-profile" onClick={() => navigate('/profile')}>
+              <img src={user?.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix"} alt="Avatar" />
+            </div>
           </div>
-        </div>
-      </header>
-
-      {/* Grid */}
-      <div className="planner-grid">
-        {dates.map(({ dayEn, date }) => {
-          const dailyCals = dailyTotals[dayEn];
-          const isExceeded = dailyCals > 3000;
-
-          return (
-            <div key={dayEn} className="grid-column">
-              <div className="column-head">
-                <span className="day-text">{dayEn}</span>
-                <span className="date-text">{date}</span>
+        </header>
+      ) : (
+        <header className="mobile-planner-header">
+          <div className="planner-title-row">
+            <h2>Meal Planner</h2>
+            <div className="planner-summary">
+              <span className={weeklyStats.totalCals > 15000 ? 'warn' : ''}>
+                {weeklyStats.totalCals.toLocaleString()} kcal this week
+              </span>
+            </div>
+          </div>
+          
+          {/* Horizontal Date Picker */}
+          <div className="mobile-date-picker">
+            {dates.map(({ dayEn, date, iso }, i) => (
+              <div 
+                key={dayEn} 
+                className={`date-item ${dayEn === selectionModal.day || (!selectionModal.day && i === 0) ? 'active' : ''}`}
+                onClick={() => setSelectionModal(prev => ({ ...prev, day: dayEn }))}
+              >
+                <span className="day-label">{dayEn}</span>
+                <span className="date-label">{date}</span>
               </div>
+            ))}
+          </div>
+        </header>
+      )}
 
-              <div className="column-slots">
-                 {slots.map(slot => {
-                  const meal = plannedMeals[`${dayEn}-${slot}`];
-                  const isDragTarget = dragOverTarget?.day === dayEn && dragOverTarget?.slot === slot;
+      {/* 2. Grid (Mobile Specific Layout) */}
+      {!Capacitor.isNativePlatform() ? (
+        <div className="planner-grid">
+          {dates.map(({ dayEn, date }) => {
+            const dailyCals = dailyTotals[dayEn];
+            const isExceeded = dailyCals > 3000;
 
-                  return (
-                    <div 
-                      key={slot} 
-                      className={`slot-item ${isDragTarget ? 'drag-over' : ''}`}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        if (!meal) setDragOverTarget({ day: dayEn, slot });
-                      }}
-                      onDragLeave={() => setDragOverTarget(null)}
-                      onDrop={(e) => handleDrop(e, dayEn, slot)}
-                    >
-                      <span className="slot-name">BỮA {slot.toUpperCase()}</span>
-                      {meal ? (
-                        <div className="meal-card">
-                          <div className="meal-info">
-                            <h5>{meal.title}</h5>
-                            <p>{meal.cal} kcal</p>
-                          </div>
-                          <button className="remove-meal-btn" onClick={() => handleRemoveMeal(`${dayEn}-${slot}`)}>
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="empty-slot" onClick={() => handleAddMeal(dayEn, slot)}>
-                           <Plus size={20} className="plus-icon" />
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="column-foot">
-                <span className="foot-label">Daily Total</span>
-                <div className={`total-value ${isExceeded ? 'warn' : ''}`}>
-                   {dailyCals} <span className="unit">kcal</span>
+            return (
+              <div key={dayEn} className="grid-column">
+                <div className="column-head">
+                  <span className="day-text">{dayEn}</span>
+                  <span className="date-text">{date}</span>
                 </div>
-                {isExceeded && (
-                  <div className="warn-text">
-                    <AlertTriangle size={12} /> LIMIT EXCEEDED
+
+                <div className="column-slots">
+                  {slots.map(slot => {
+                    const meal = plannedMeals[`${dayEn}-${slot}`];
+                    const isDragTarget = dragOverTarget?.day === dayEn && dragOverTarget?.slot === slot;
+
+                    return (
+                      <div 
+                        key={slot} 
+                        className={`slot-item ${isDragTarget ? 'drag-over' : ''}`}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          if (!meal) setDragOverTarget({ day: dayEn, slot });
+                        }}
+                        onDragLeave={() => setDragOverTarget(null)}
+                        onDrop={(e) => handleDrop(e, dayEn, slot)}
+                      >
+                        <span className="slot-name">BỮA {slot.toUpperCase()}</span>
+                        {meal ? (
+                          <div className="meal-card">
+                            <div className="meal-info">
+                              <h5>{meal.title}</h5>
+                              <p>{meal.cal} kcal</p>
+                            </div>
+                            <button className="remove-meal-btn" onClick={() => handleRemoveMeal(`${dayEn}-${slot}`)}>
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="empty-slot" onClick={() => handleAddMeal(dayEn, slot)}>
+                             <Plus size={20} className="plus-icon" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="column-foot">
+                  <span className="foot-label">Daily Total</span>
+                  <div className={`total-value ${isExceeded ? 'warn' : ''}`}>
+                     {dailyCals} <span className="unit">kcal</span>
+                  </div>
+                  {isExceeded && (
+                    <div className="warn-text">
+                      <AlertTriangle size={12} /> LIMIT EXCEEDED
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="mobile-meal-list">
+          {slots.map(slot => {
+            const currentDay = selectionModal.day || dates[0].dayEn;
+            const meal = plannedMeals[`${currentDay}-${slot}`];
+            return (
+              <div key={slot} className="mobile-slot-section">
+                <div className="slot-title">BỮA {slot.toUpperCase()}</div>
+                {meal ? (
+                  <div className="mobile-meal-card animate-slideInRight">
+                    <img src={meal.img || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400"} alt={meal.title} />
+                    <div className="meal-details">
+                      <h4>{meal.title}</h4>
+                      <div className="meal-meta">
+                        <span>{meal.cal} kcal</span>
+                        <span>•</span>
+                        <span>25 min</span>
+                      </div>
+                    </div>
+                    <button className="remove-btn" onClick={() => handleRemoveMeal(`${currentDay}-${slot}`)}>
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="mobile-empty-slot" onClick={() => handleAddMeal(currentDay, slot)}>
+                    <div className="add-content">
+                      <Plus size={24} />
+                      <span>Thêm món cho bữa {slot.toLowerCase()}</span>
+                    </div>
                   </div>
                 )}
               </div>
+            );
+          })}
+          
+          {/* Calorie Alert Mobile */}
+          {dailyTotals[selectionModal.day || dates[0].dayEn] > 2500 && (
+            <div className="mobile-calorie-alert">
+              <AlertTriangle size={20} />
+              <span>Cảnh báo: Lượng Calo hôm nay đã vượt ngưỡng cho phép!</span>
             </div>
-          );
-        })}
-      </div>
-
-      {/* Bottom Widgets */}
-      <div className="planner-bottom">
-        <div className="chef-choice-widget" style={{ backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8), transparent), url('https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800')` }}>
-          <div className="widget-content">
-            <span className="badge">LỰA CHỌN CỦA ĐẦU BẾP</span>
-            <h3>Bữa tiệc cuối tuần: Thịt cừu nướng chậm</h3>
-            <p>Thích hợp cho buổi họp mặt gia đình Chủ nhật. Giàu protein và sắt, chỉ cần chuẩn bị rất ít thời gian.</p>
-          </div>
+          )}
         </div>
+      )}
 
-        <div className="summary-widget">
-          <div className="summary-content">
-            <h4>Tóm tắt hàng tuần</h4>
-            <p>
-              Bạn đã lên kế hoạch cho <strong>{weeklyStats.count}/21</strong> bữa ăn.<br />
-              Tổng cộng: <strong>{weeklyStats.totalCals} kcal</strong> (Trung bình <strong>{weeklyStats.avg} kcal/ngày</strong>).
-            </p>
+      {/* 3. Bottom Widgets (Web Only) */}
+      {!Capacitor.isNativePlatform() && (
+        <div className="planner-bottom">
+          <div className="chef-choice-widget" style={{ backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.8), transparent), url('https://images.unsplash.com/photo-1551183053-bf91a1d81141?w=800')` }}>
+            <div className="widget-content">
+              <span className="badge">LỰA CHỌN CỦA ĐẦU BẾP</span>
+              <h3>Bữa tiệc cuối tuần: Thịt cừu nướng chậm</h3>
+              <p>Thích hợp cho buổi họp mặt gia đình Chủ nhật. Giàu protein và sắt, chỉ cần chuẩn bị rất ít thời gian.</p>
+            </div>
           </div>
-          <button className="generate-btn" onClick={() => navigate('/shopping-list')}>
-            Tạo danh sách mua sắm <Plus size={18} className="btn-plus" />
-          </button>
-          <div className="fab-add" onClick={() => {
-            // Find first empty slot and open modal
-            for (const d of dates) {
-              for (const s of slots) {
-                if (!plannedMeals[`${d.dayEn}-${s}`]) {
-                  handleAddMeal(d.dayEn, s);
-                  return;
+
+          <div className="summary-widget">
+            <div className="summary-content">
+              <h4>Tóm tắt hàng tuần</h4>
+              <p>
+                Bạn đã lên kế hoạch cho <strong>{weeklyStats.count}/21</strong> bữa ăn.<br />
+                Tổng cộng: <strong>{weeklyStats.totalCals} kcal</strong> (Trung bình <strong>{weeklyStats.avg} kcal/ngày</strong>).
+              </p>
+            </div>
+            <button className="generate-btn" onClick={() => navigate('/shopping-list')}>
+              Tạo danh sách mua sắm <Plus size={18} className="btn-plus" />
+            </button>
+            <div className="fab-add" onClick={() => {
+              for (const d of dates) {
+                for (const s of slots) {
+                  if (!plannedMeals[`${d.dayEn}-${s}`]) {
+                    handleAddMeal(d.dayEn, s);
+                    return;
+                  }
                 }
               }
-            }
-            toast.info("Lịch tuần này đã đầy!");
-          }}>+</div>
+              toast.info("Lịch tuần này đã đầy!");
+            }}>+</div>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Selection Modal */}
+      {/* 4. Selection Modal (Web) / Bottom Sheet (Mobile) */}
       {selectionModal.show && (
-        <div className="planner-modal-overlay" onClick={() => setSelectionModal({ show: false, day: null, slot: null })}>
+        <div className={`planner-modal-overlay ${Capacitor.isNativePlatform() ? "bottom-sheet" : ""}`} onClick={() => setSelectionModal({ show: false, day: null, slot: null })}>
           <div className="planner-modal-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-drag-handle"></div>
             <div className="modal-header">
               <div className="header-top">
-                <h4>Chọn món cho {selectionModal.day} - {selectionModal.slot}</h4>
-                <button className="close-btn" onClick={() => setSelectionModal({ show: false, day: null, slot: null })}><Plus style={{transform: 'rotate(45deg)'}} /></button>
+                <h4>{Capacitor.isNativePlatform() ? "Saved Recipes" : `Chọn món cho ${selectionModal.day} - ${selectionModal.slot}`}</h4>
+                {!Capacitor.isNativePlatform() && <button className="close-btn" onClick={() => setSelectionModal({ show: false, day: null, slot: null })}><Plus style={{transform: 'rotate(45deg)'}} /></button>}
               </div>
               <div className="modal-tabs">
                 <button 
                   className={`modal-tab ${selectionModal.activeTab === 'saved' ? 'active' : ''}`}
                   onClick={() => setSelectionModal(prev => ({ ...prev, activeTab: 'saved' }))}
                 >
-                  Khay món ăn ({savedRecipes.length})
+                  Khay món ăn
                 </button>
                 <button 
                   className={`modal-tab ${selectionModal.activeTab === 'all' ? 'active' : ''}`}
                   onClick={() => setSelectionModal(prev => ({ ...prev, activeTab: 'all' }))}
                 >
-                  Tất cả công thức
+                  Tất cả
                 </button>
               </div>
             </div>
@@ -409,12 +484,6 @@ function MealPlanner() {
                   </div>
                 </div>
               ))}
-              {selectionModal.activeTab === 'saved' && savedRecipes.length === 0 && (
-                <div className="empty-modal-state">
-                  <p>Khay món ăn của bạn đang trống.</p>
-                  <button onClick={() => navigate('/recipes')}>Đi lưu công thức ngay</button>
-                </div>
-              )}
             </div>
           </div>
         </div>

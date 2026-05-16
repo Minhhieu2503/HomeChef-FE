@@ -8,9 +8,12 @@ const config: CapacitorConfig = {
     cleartext: true
   },
   plugins: {
+    CapacitorHttp: {
+      enabled: true,
+    },
     GoogleAuth: {
       scopes: ['profile', 'email'],
-      serverClientId: '545040228507-l8e0ap0v20jcmrmra1mar3akri99dson.apps.googleusercontent.com',
+      serverClientId: '41936203262-j50v83fnv10eohucf993qk20ouha1mfq.apps.googleusercontent.com',
       forceCodeForRefreshToken: true,
     },
   },

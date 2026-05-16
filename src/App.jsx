@@ -1,5 +1,8 @@
+import { useState, useEffect } from "react";
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import Sidebar from "./components/Sidebar/Sidebar";
+import MobileNav from "./components/MobileNav/MobileNav";
 import Dashboard from "./pages/Home/Home";
 import MealPlanner from "./pages/MealPlanner/MealPlanner";
 import Recipes from "./pages/Recipes/Recipes";
@@ -56,6 +59,30 @@ const AdminRoute = ({ children }) => {
 };
 
 function App() {
+  const [isNative, setIsNative] = useState(false);
+
+  useEffect(() => {
+    const checkPlatform = () => {
+      const isNativePlatform = Capacitor.isNativePlatform();
+      const isSmallScreen = window.innerWidth <= 768;
+      
+      // If it's native OR a small screen, we treat it as a mobile app experience
+      const shouldShowMobile = isNativePlatform || isSmallScreen;
+      
+      setIsNative(shouldShowMobile);
+      
+      if (shouldShowMobile) {
+        document.body.classList.add("is-native-app");
+      } else {
+        document.body.classList.remove("is-native-app");
+      }
+    };
+
+    checkPlatform();
+    window.addEventListener('resize', checkPlatform);
+    return () => window.removeEventListener('resize', checkPlatform);
+  }, []);
+
   return (
     <Router>
       <Routes>
@@ -80,8 +107,8 @@ function App() {
           path="/*"
           element={
             <ProtectedRoute>
-              <div className="app-layout">
-                <Sidebar />
+              <div className={`app-layout ${isNative ? "is-native-app" : ""}`}>
+                {isNative ? <MobileNav /> : <Sidebar />}
                 <main className="main-content">
                   <Routes>
                     <Route path="/" element={<Dashboard />} />

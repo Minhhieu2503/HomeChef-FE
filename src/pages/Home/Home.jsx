@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { authService } from "../../services/auth.service";
 import { getAllRecipes } from "../../services/recipeService";
 import { getDashboardOverview } from "../../services/dashboardService";
@@ -51,7 +52,7 @@ function Dashboard() {
       // Optimistic update
       setOverview(prev => ({
         ...prev,
-        groceries: prev.groceries.map(item => 
+        groceries: prev.groceries.map(item =>
           item._id === itemId ? { ...item, checked: !currentChecked } : item
         )
       }));
@@ -89,45 +90,83 @@ function Dashboard() {
   return (
     <div className="dashboard">
       {/* 1. Dashboard Header */}
-      <header className="dashboard-header">
-        <div className="header-left">
-          <h1>Chào buổi sáng, {user?.name || "Chef"}!</h1>
-          <p>Hôm nay bạn muốn nấu món gì?</p>
-        </div>
-        
-        <div className="header-right">
-          <form className="smart-search" onSubmit={handleSearch}>
+      {!Capacitor.isNativePlatform() ? (
+        <header className="dashboard-header">
+          <div className="header-left">
+            <h1>Xin chào, {user?.name || "Chef"}!</h1>
+            <p>Hôm nay bạn muốn nấu món gì?</p>
+          </div>
+
+          <div className="header-right">
+            <form className="smart-search" onSubmit={handleSearch}>
+              <Search size={18} className="text-muted" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm công thức..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <button type="submit" className="btn-search-header">Tìm</button>
+            </form>
+
+            <div className="header-actions">
+              <button className="notification-btn" title="Thông báo" onClick={() => alert('Hiện tại bạn không có thông báo mới.')}>
+                <Bell size={24} />
+                <span className="notification-badge"></span>
+              </button>
+              <div className="user-profile-summary" onClick={() => navigate('/profile')}>
+                <img
+                  src={user?.avatar || "https://ui-avatars.com/api/?name=User&background=4ADE80&color=fff"}
+                  alt="Avatar"
+                  className="user-avatar-small"
+                />
+              </div>
+            </div>
+          </div>
+        </header>
+      ) : (
+        <header className="mobile-dashboard-header">
+          <div className="mobile-header-top">
+            <div className="mobile-user-greeting">
+              <img
+                src={user?.avatar || "https://ui-avatars.com/api/?name=User&background=4ADE80&color=fff"}
+                alt="Avatar"
+                className="mobile-avatar"
+                onClick={() => navigate('/profile')}
+              />
+              <div className="mobile-greeting-text">
+                <span className="welcome-sub">Welcome back,</span>
+                <span className="user-name-pro">{user?.name?.split(' ')[0] || "Chef"}!</span>
+              </div>
+            </div>
+            <div className="mobile-nutrition-circle" onClick={() => navigate('/meal-planner')}>
+              <div className="circle-inner">
+                <span className="circle-percent">85%</span>
+                <span className="circle-label">Goal</span>
+              </div>
+              <svg className="circle-svg">
+                <circle cx="22" cy="22" r="20" className="circle-bg" />
+                <circle cx="22" cy="22" r="20" className="circle-fill" style={{ strokeDasharray: "107, 126" }} />
+              </svg>
+            </div>
+          </div>
+          <form className="mobile-smart-search" onSubmit={handleSearch}>
             <Search size={18} className="text-muted" />
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm công thức..." 
+            <input
+              type="text"
+              placeholder="Tìm kiếm món ngon..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button type="submit" className="btn-search-header">Tìm</button>
           </form>
-          
-          <div className="header-actions">
-            <button className="notification-btn" title="Thông báo" onClick={() => alert('Hiện tại bạn không có thông báo mới.')}>
-              <Bell size={24} />
-              <span className="notification-badge"></span>
-            </button>
-            <div className="user-profile-summary" onClick={() => navigate('/profile')}>
-              <img 
-                src={user?.avatar || "https://ui-avatars.com/api/?name=User&background=4ADE80&color=fff"} 
-                alt="Avatar" 
-                className="user-avatar-small"
-              />
-            </div>
-          </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* 2. Hero Section */}
       <section className="hero-section">
-        <img 
-          src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1600&q=80" 
-          alt="Inspiration" 
+        <img
+          src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1600&q=80"
+          alt="Inspiration"
           className="hero-banner"
         />
         <div className="hero-content">
@@ -140,8 +179,8 @@ function Dashboard() {
       {/* 3. Quick Filters */}
       <div className="quick-filters">
         {filters.map(filter => (
-          <button 
-            key={filter} 
+          <button
+            key={filter}
             className={`filter-tag ${activeFilter === filter ? 'active' : ''}`}
             onClick={() => setActiveFilter(filter)}
           >
@@ -158,7 +197,7 @@ function Dashboard() {
             <h3>Trending Now</h3>
             <Link to="/recipes" className="view-all-btn">Xem tất cả <ChevronRight size={16} /></Link>
           </div>
-          
+
           <div className="recipe-grid">
             {loading ? (
               <p>Đang tải món ngon...</p>
@@ -203,8 +242,8 @@ function Dashboard() {
                   <span className="stat-value">{overview.nutrition.calories.current.toLocaleString()} / {overview.nutrition.calories.goal.toLocaleString()} kcal</span>
                 </div>
                 <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
+                  <div
+                    className="progress-fill"
                     style={{ width: `${Math.min(100, (overview.nutrition.calories.current / overview.nutrition.calories.goal) * 100)}%` }}
                   ></div>
                 </div>
@@ -215,11 +254,11 @@ function Dashboard() {
                   <span className="stat-value">{overview.nutrition.protein.current} / {overview.nutrition.protein.goal} g</span>
                 </div>
                 <div className="progress-bar">
-                  <div 
-                    className="progress-fill" 
-                    style={{ 
-                      width: `${Math.min(100, (overview.nutrition.protein.current / overview.nutrition.protein.goal) * 100)}%`, 
-                      backgroundColor: '#3B82F6' 
+                  <div
+                    className="progress-fill"
+                    style={{
+                      width: `${Math.min(100, (overview.nutrition.protein.current / overview.nutrition.protein.goal) * 100)}%`,
+                      backgroundColor: '#3B82F6'
                     }}
                   ></div>
                 </div>
@@ -237,9 +276,9 @@ function Dashboard() {
               {overview.groceries.length > 0 ? (
                 overview.groceries.map(item => (
                   <div key={item._id} className="grocery-item-mini">
-                    <input 
-                      type="checkbox" 
-                      checked={item.checked} 
+                    <input
+                      type="checkbox"
+                      checked={item.checked}
                       onChange={() => handleToggleGrocery(item._id, item.checked)}
                     />
                     <span style={{ textDecoration: item.checked ? 'line-through' : 'none', opacity: item.checked ? 0.6 : 1 }}>

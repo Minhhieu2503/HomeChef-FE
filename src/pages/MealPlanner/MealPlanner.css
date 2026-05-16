@@ -537,11 +537,170 @@
     scroll-snap-align: center;
   }
 
-  /* Stack bottom widgets vertically */
-  .planner-bottom {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
+  /* --- Mobile Planner Specific --- */
+.mobile-planner-header {
+  padding: env(safe-area-inset-top, 20px) 1.5rem 1.5rem;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.planner-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.planner-title-row h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.planner-summary span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-primary-bg);
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+}
+
+.mobile-date-picker {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+}
+
+.mobile-date-picker::-webkit-scrollbar {
+  display: none;
+}
+
+.date-item {
+  min-width: 55px;
+  height: 75px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  border-radius: 18px;
+  transition: all 0.3s;
+}
+
+.date-item.active {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
+}
+
+.day-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  opacity: 0.7;
+}
+
+.date-label {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.mobile-meal-list {
+  padding: 0 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.mobile-slot-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.slot-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  letter-spacing: 1px;
+}
+
+.mobile-meal-card {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 0.75rem;
+  border-radius: 20px;
+  gap: 1rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.mobile-meal-card img {
+  width: 70px;
+  height: 70px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.meal-details h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.meal-meta {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.mobile-empty-slot {
+  border: 2px dashed var(--color-border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.add-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.bottom-sheet .planner-modal-card {
+  width: 100%;
+  max-width: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 32px 32px 0 0;
+  margin: 0;
+  padding: 1.5rem;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.modal-drag-handle {
+  width: 40px;
+  height: 4px;
+  background: rgba(0,0,0,0.1);
+  border-radius: 10px;
+  margin: -0.5rem auto 1rem;
+}
 
   .chef-choice-widget {
     height: auto;
