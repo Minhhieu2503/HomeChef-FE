@@ -46,36 +46,24 @@ const AdminRoute = ({ children }) => {
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  // Synchronized mobile detection
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const closeSidebar = () => setIsSidebarOpen(false);
 
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth <= 1024;
-      setIsMobile(mobile);
-      // Close sidebar when switching to mobile or if screen is large
-      if (mobile) setIsSidebarOpen(false);
-    };
-    
+    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
     window.addEventListener("resize", handleResize);
-    handleResize(); // Initial check
-    
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <Router>
       <Routes>
-        {/* Auth Routes */}
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot" element={<ForgotPassword />} />
 
-        {/* Admin Routes */}
         <Route 
           path="/admin/*" 
           element={
@@ -85,40 +73,32 @@ function App() {
           } 
         />
 
-        {/* Protected Consumer Routes */}
         <Route
           path="/*"
           element={
             <ProtectedRoute>
-              <div className={`app-layout ${isMobile ? 'is-mobile' : 'is-desktop'} ${isSidebarOpen ? 'sidebar-open' : ''}`}>
-                
-                {/* 1. Sidebar (Force hide on mobile via CSS) */}
-                <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} isMobile={isMobile} />
-                
-                {/* 2. Top Header (Only Mobile) */}
-                {isMobile && <TopHeader toggleSidebar={() => setIsSidebarOpen(true)} />}
+              <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : ''} ${isMobile ? 'is-mobile' : 'is-desktop'}`}>
+                {isMobile && <TopHeader />}
 
-                {/* 3. Overlay for mobile sidebar */}
-                {isSidebarOpen && isMobile && (
-                  <div className="sidebar-overlay" onClick={closeSidebar}></div>
-                )}
+                {isSidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar}></div>}
 
+                {(!isMobile || isSidebarOpen) && <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />}
+                
                 <main className="main-content">
                   <Routes>
-                    <Route path="/" element={<Dashboard isMobile={isMobile} />} />
+                    <Route path="/" element={<Dashboard />} />
                     <Route path="/meal-planner" element={<MealPlanner isMobile={isMobile} />} />
-                    <Route path="/recipes" element={<Recipes isMobile={isMobile} />} />
-                    <Route path="/recipes/:id" element={<RecipeDetail isMobile={isMobile} />} />
-                    <Route path="/pantry" element={<Pantry isMobile={isMobile} />} />
-                    <Route path="/shopping-list" element={<ShoppingList isMobile={isMobile} />} />
-                    <Route path="/profile" element={<Profile isMobile={isMobile} />} />
-                    <Route path="/smart-cook" element={<SmartCook isMobile={isMobile} />} />
-                    <Route path="/pricing" element={<Pricing isMobile={isMobile} />} />
-                    <Route path="/payment-result" element={<PaymentResult isMobile={isMobile} />} />
+                    <Route path="/recipes" element={<Recipes />} />
+                    <Route path="/recipes/:id" element={<RecipeDetail />} />
+                    <Route path="/pantry" element={<Pantry />} />
+                    <Route path="/shopping-list" element={<ShoppingList />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/smart-cook" element={<SmartCook />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/payment-result" element={<PaymentResult />} />
                   </Routes>
                 </main>
 
-                {/* 4. Bottom Navigation (Only Mobile) */}
                 {isMobile && <BottomNav />}
               </div>
             </ProtectedRoute>

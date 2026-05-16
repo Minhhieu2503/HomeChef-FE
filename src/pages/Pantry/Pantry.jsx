@@ -7,7 +7,7 @@ import { useToast } from "../../context/ToastContext";
 import { Thermometer, Zap, AlertTriangle, ChevronRight, Plus, X, Package, Edit2, Trash2, Camera, Upload, Loader, ChefHat, Clock, Flame, CheckCircle2, Circle, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
 import "./Pantry.css";
 
-function Pantry({ isMobile }) {
+function Pantry() {
   const toast = useToast();
   const navigate = useNavigate();
   const [ingredients, setIngredients] = useState([]);
@@ -16,10 +16,7 @@ function Pantry({ isMobile }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [newItem, setNewItem] = useState({ name: "", quantity: "", unit: "g", category: "Other", emoji: "📦", expiryDate: "" });
-
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
 
   // --- Scan States ---
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
