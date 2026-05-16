@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { Menu, X } from "lucide-react";
 import Sidebar from "./components/Sidebar/Sidebar";
 import TopHeader from "./components/Navigation/TopHeader";
 import BottomNav from "./components/Navigation/BottomNav";
@@ -29,43 +28,38 @@ const ProtectedRoute = ({ children }) => {
   const isAdmin = authUtils.isAdmin();
 
   if (!isLoggedIn) {
-    if (!hasSeenOnboarding) {
-      return <Navigate to="/onboarding" replace />;
-    }
+    if (!hasSeenOnboarding) return <Navigate to="/onboarding" replace />;
     return <Navigate to="/login" replace />;
   }
 
-  if (!hasSeenOnboarding) {
-    localStorage.setItem("hasSeenOnboarding", "true");
-  }
-
-  if (isAdmin) {
-    return <Navigate to="/admin" replace />;
-  }
+  if (!hasSeenOnboarding) localStorage.setItem("hasSeenOnboarding", "true");
+  if (isAdmin) return <Navigate to="/admin" replace />;
 
   return children;
 };
 
 const AdminRoute = ({ children }) => {
   const isAdmin = authUtils.isAdmin();
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
-  }
+  if (!isAdmin) return <Navigate to="/" replace />;
   return children;
 };
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 1024);
-
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const closeSidebar = () => setIsSidebarOpen(false);
+  // Use a more robust check that handles SSR and initial mount
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 1024);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
     <Router>
@@ -88,16 +82,19 @@ function App() {
           path="/*"
           element={
             <ProtectedRoute>
-              <div className={`app-layout ${isSidebarOpen ? 'sidebar-open' : ''} ${isMobile ? 'is-mobile' : 'is-desktop'}`}>
-                {/* Only show mobile header on mobile devices */}
-                {isMobile && <TopHeader />}
-
-                {/* Sidebar Overlay */}
-                {isSidebarOpen && <div className="sidebar-overlay" onClick={closeSidebar}></div>}
-
-                {/* Only show sidebar on desktop or if specifically opened on mobile */}
-                {(!isMobile || isSidebarOpen) && <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />}
+              <div className={`app-layout ${isMobile ? 'is-mobile' : 'is-desktop'} ${isSidebarOpen ? 'sidebar-open' : ''}`}>
                 
+                {/* 1. Top Header (Only Mobile) */}
+                {isMobile && <TopHeader toggleSidebar={() => setIsSidebarOpen(true)} />}
+
+                {/* 2. Sidebar (Hidden via CSS on mobile unless forced) */}
+                <Sidebar isOpen={isSidebarOpen} onClose={closeSidebar} />
+                
+                {/* 3. Overlay for mobile sidebar */}
+                {isMobile && isSidebarOpen && (
+                  <div className="sidebar-overlay" onClick={closeSidebar}></div>
+                )}
+
                 <main className="main-content">
                   <Routes>
                     <Route path="/" element={<Dashboard />} />
@@ -113,7 +110,7 @@ function App() {
                   </Routes>
                 </main>
 
-                {/* Only show bottom nav on mobile */}
+                {/* 4. Bottom Nav (Only Mobile) */}
                 {isMobile && <BottomNav />}
               </div>
             </ProtectedRoute>

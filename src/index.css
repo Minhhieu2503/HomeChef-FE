@@ -143,6 +143,12 @@ body {
   h2 { font-size: 1.25rem; }
 }
 
+/* Fallback for JS-driven mobile class */
+.app-layout.is-mobile .main-content {
+  margin-left: 0 !important;
+  max-width: 100vw !important;
+}
+
 /* ============ Typography ============ */
 h1, h2, h3, h4, h5 {
   color: var(--color-text);
