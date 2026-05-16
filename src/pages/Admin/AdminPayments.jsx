@@ -58,10 +58,10 @@ const AdminPayments = () => {
     }).format(amount || 0);
   };
 
-  if (loading) return <div style={{ padding: '3rem', textAlign: 'center' }}><Loader2 className="animate-spin" /> Đang tải giao dịch thực...</div>;
+  if (loading) return <div key="loading" style={{ padding: '3rem', textAlign: 'center' }}><Loader2 className="animate-spin" /> Đang tải giao dịch thực...</div>;
   
   return (
-    <div className="view-container-pro">
+    <div key="content" className="view-container-pro">
       <header className="view-header">
         <h1>Quản lý Giao dịch & Thanh toán</h1>
         <p>Theo dõi dòng tiền, doanh thu qua các cổng thanh toán tích hợp (Dữ liệu thực).</p>
@@ -120,8 +120,8 @@ const AdminPayments = () => {
             </tr>
           </thead>
           <tbody>
-            {transactions.map(tx => (
-              <tr key={tx._id}>
+            {transactions.map((tx, idx) => (
+              <tr key={tx._id || idx}>
                 <td><code style={{ background: '#f1f5f9', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem' }}>{tx.orderId}</code></td>
                 <td>
                   <div style={{ fontWeight: 600 }}>{tx.user?.name || "N/A"}</div>
@@ -150,12 +150,6 @@ const AdminPayments = () => {
           </tbody>
         </table>
       </div>
-
-      <style dangerouslySetInnerHTML={{ __html: `
-        .badge-pill.success { background: #dcfce7; color: #10b981; }
-        .badge-pill.pending { background: #fef3c7; color: #d97706; }
-        .badge-pill.refunded { background: #f1f5f9; color: #94a3b8; }
-      `}} />
     </div>
   );
 };
