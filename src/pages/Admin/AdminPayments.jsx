@@ -98,7 +98,7 @@ const AdminPayments = () => {
       </header>
 
       {/* FINANCE STATS */}
-      <div className="stats-grid-pro" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+      <div className="stats-grid-pro" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
         <div className="admin-card" style={{ borderLeft: '4px solid #10b981' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
@@ -122,18 +122,6 @@ const AdminPayments = () => {
             </div>
           </div>
         </div>
-
-        <div className="admin-card" style={{ borderLeft: '4px solid #ef4444' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Yêu cầu hoàn tiền</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '0.25rem' }}>{refundCount}</div>
-            </div>
-            <div style={{ background: '#fee2e2', color: '#ef4444', padding: '0.75rem', borderRadius: '12px' }}>
-              <AlertCircle size={24} />
-            </div>
-          </div>
-        </div>
       </div>
 
       <div className="table-container">
@@ -146,7 +134,6 @@ const AdminPayments = () => {
               <th>Cổng</th>
               <th>Trạng thái</th>
               <th>Thời gian</th>
-              <th>Thao tác</th>
             </tr>
           </thead>
           <tbody>
@@ -168,12 +155,6 @@ const AdminPayments = () => {
                 </td>
                 <td style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
                   {new Date(tx.createdAt).toLocaleDateString('vi-VN')}
-                </td>
-                <td>
-                  <div className="action-btns">
-                    <button className="btn-icon-sm" title="Xem chi tiết"><ExternalLink size={16} /></button>
-                    {tx.status === 'success' && <button className="btn-icon-sm danger" title="Hoàn tiền">RE</button>}
-                  </div>
                 </td>
               </tr>
             ))}
