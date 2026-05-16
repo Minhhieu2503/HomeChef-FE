@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { authService } from "../../services/auth.service";
 import { getAllRecipes } from "../../services/recipeService";
-import { Search, Filter, Heart, Clock, Star, ChevronRight, SlidersHorizontal } from "lucide-react";
+import { Search, Filter, Heart, Clock, Star, ChevronRight, SlidersHorizontal, X } from "lucide-react";
 import "./Recipes.css";
 
 function Recipes() {
@@ -12,6 +12,7 @@ function Recipes() {
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [user, setUser] = useState(null);
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // Filter States
   const [prepTime, setPrepTime] = useState(120);
@@ -192,6 +193,13 @@ function Recipes() {
               )}
             </div>
             <button type="submit" className="btn-search-header">Tìm</button>
+            <button 
+              type="button" 
+              className="btn-filter-toggle-mobile"
+              onClick={() => setShowMobileFilters(true)}
+            >
+              <Filter size={20} />
+            </button>
           </form>
         </div>
 
@@ -315,11 +323,18 @@ function Recipes() {
         )}
       </main>
 
-      {/* 2. Filter Sidebar (Right) */}
-      <aside className="filter-sidebar">
-        <div className="flex items-center gap-2 mb-6">
-          <SlidersHorizontal size={20} className="text-primary" />
-          <h3 className="text-lg font-bold" translate="no">Bộ lọc nâng cao</h3>
+      {/* 2. Filter Sidebar */}
+      {showMobileFilters && <div className="filter-overlay-mobile" onClick={() => setShowMobileFilters(false)}></div>}
+      
+      <aside className={`filter-sidebar ${showMobileFilters ? 'open' : ''}`}>
+        <div className="filter-sidebar-header">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal size={20} className="text-primary" />
+            <h3 className="text-lg font-bold" translate="no">Bộ lọc nâng cao</h3>
+          </div>
+          <button className="btn-close-filters" onClick={() => setShowMobileFilters(false)}>
+            <X size={24} />
+          </button>
         </div>
 
         <div className="filter-group">

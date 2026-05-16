@@ -21,6 +21,34 @@
   border: 1px solid #f1f5f9;
 }
 
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 1rem;
+  }
+  
+  .profile-main-card {
+    padding: 2rem 1.5rem;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    text-align: center;
+  }
+  
+  .avatar-large-wrapper {
+    margin: 0 auto;
+  }
+  
+  .profile-stats {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem;
+  }
+  
+  .stat-box {
+    min-width: 120px;
+    padding: 0.5rem 1rem;
+  }
+}
+
 .avatar-large-wrapper {
   position: relative;
   width: 120px;
@@ -157,6 +185,20 @@
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .macro-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .calorie-summary-card {
+    padding: 1.25rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
 }
 
 .macro-card {
@@ -310,6 +352,17 @@
 .setting-text .subtitle {
   font-size: 0.75rem;
   color: #94a3b8;
+}
+
+@media (max-width: 768px) {
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .preferences-section {
+    grid-template-columns: 1fr;
+    padding: 1.25rem;
+  }
 }
 
 @media (max-width: 1024px) {

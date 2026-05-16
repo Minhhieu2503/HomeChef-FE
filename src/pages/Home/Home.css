@@ -21,6 +21,12 @@
   border-bottom: 1px solid var(--color-border-light);
 }
 
+@media (max-width: 768px) {
+  .dashboard-header {
+    display: none; /* Hide internal header on mobile, use global mobile header */
+  }
+}
+
 .header-left {
   display: flex;
   flex-direction: column;
@@ -139,6 +145,30 @@
   opacity: 0.9;
 }
 
+@media (max-width: 768px) {
+  .hero-section {
+    margin: 0;
+    height: auto;
+    min-height: 250px;
+    border-radius: 0;
+  }
+  
+  .hero-content {
+    padding: 2rem 1.5rem;
+    position: relative;
+    background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 100%);
+  }
+  
+  .hero-content h2 {
+    font-size: 1.75rem;
+  }
+  
+  .hero-content p {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
 .btn-view-plan {
   background-color: var(--color-primary);
   color: white;
@@ -164,7 +194,15 @@
   display: flex;
   gap: 1rem;
   overflow-x: auto;
-  padding-bottom: 0.5rem;
+  padding: 0.5rem 0 1rem;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (max-width: 768px) {
+  .quick-filters {
+    margin: 0 1.25rem;
+  }
 }
 
 .quick-filters::-webkit-scrollbar {
@@ -414,27 +452,20 @@
 }
 
 @media (max-width: 768px) {
-  .dashboard-header {
-    padding: 1rem 1.25rem;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-  
-  .smart-search {
-    width: 100%;
-  }
-  
-  .hero-section {
-    margin: 0 1.25rem;
-    height: 300px;
-  }
-  
-  .hero-content h2 {
-    font-size: 2rem;
-  }
-  
   .dashboard-content-grid {
     margin: 0 1.25rem 2rem;
+    gap: 1.5rem;
+  }
+  
+  .recipe-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-sidebar {
+    order: -1; /* Put nutrition stats on top on mobile */
+  }
+  
+  .sidebar-widget {
+    padding: 1.25rem;
   }
 }

@@ -89,6 +89,42 @@
   gap: 1.25rem;
 }
 
+@media (max-width: 1200px) {
+  .planner-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .planner-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .grid-column {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 24px;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .column-slots {
+    min-height: auto;
+    background: transparent;
+    padding: 0;
+  }
+  
+  .planner-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .header-title {
+    font-size: 1.5rem;
+  }
+}
+
 .grid-column {
   display: flex;
   flex-direction: column;
@@ -254,6 +290,22 @@
   margin-top: 1rem;
 }
 
+@media (max-width: 1024px) {
+  .planner-bottom {
+    grid-template-columns: 1fr;
+  }
+  
+  .chef-choice-widget {
+    padding: 2rem;
+    height: auto;
+    min-height: 200px;
+  }
+  
+  .summary-widget {
+    padding: 2rem;
+  }
+}
+
 .chef-choice-widget {
   border-radius: 28px;
   overflow: hidden;
@@ -388,6 +440,26 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+}
+
+@media (max-width: 640px) {
+  .planner-modal-overlay {
+    padding: 1rem;
+  }
+  
+  .modal-tabs {
+    flex-direction: column;
+  }
+  
+  .modal-tab {
+    width: 100%;
+    text-align: center;
+  }
+  
+  .modal-recipe-grid {
+    grid-template-columns: 1fr 1fr;
+    padding: 1rem;
+  }
 }
 
 .modal-header {
