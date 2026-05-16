@@ -1,9 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getMealPlans, addMealToPlan, removeMealFromPlan } from "../../services/mealPlanService";
-import { getSavedRecipes } from "../../services/auth.service";
-import { getAllRecipes } from "../../services/recipeService";
 import { authService } from "../../services/auth.service";
+import { getAllRecipes } from "../../services/recipeService";
 import { useToast } from "../../context/ToastContext";
 import { 
   ChevronLeft, 
