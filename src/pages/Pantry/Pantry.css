@@ -26,9 +26,9 @@
 }
 
 .ingredient-cards-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 0.75rem;
 }
 
 .horizontal-ingredient-card {
@@ -44,7 +44,7 @@
 }
 
 .horizontal-ingredient-card:hover {
-  transform: translateX(10px);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-md);
   border-color: var(--color-primary-light);
 }
