@@ -72,7 +72,7 @@ const Pricing = () => {
       return;
     }
     
-    toast.loading('Đang khởi tạo thanh toán VNPay...');
+    toast.loading('Đang khởi tạo thanh toán PayOS...');
     console.log("Calling createPaymentUrl with:", { amount: plan.amount, planId: plan.id });
     try {
       const res = await paymentService.createPaymentUrl({
@@ -81,7 +81,7 @@ const Pricing = () => {
       });
 
       if (res.success && res.url) {
-        toast.success('Đang chuyển hướng đến VNPay...');
+        toast.success('Đang chuyển hướng đến PayOS...');
         window.location.href = res.url;
       } else {
         toast.error('Không thể tạo liên kết thanh toán.');

@@ -16,7 +16,7 @@ const PaymentResult = () => {
     const verifyPayment = async () => {
       try {
         // Send all query params to backend for verification
-        const res = await paymentService.vnpayReturn(location.search);
+        const res = await paymentService.payosReturn(location.search);
         setResult(res);
       } catch (err) {
         console.error("Payment verification error:", err);
