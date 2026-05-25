@@ -139,8 +139,8 @@ function Pantry() {
             recipeIngredients.some(ri => ri.includes(pn) || pn.includes(ri))
           );
           
-          // Danh sách các gia vị cơ bản sẽ bị bỏ qua khi tính nguyên liệu thiếu
-          const basicSpices = ["muối", "tiêu", "đường", "bột ngọt", "mì chính", "nước mắm", "mắm", "hạt nêm", "nêm", "dầu ăn", "dầu", "nước tương", "xì dầu", "giấm", "dấm", "nước", "hành", "tỏi", "ớt", "gừng", "sả", "hành lá"];
+          // Danh sách các gia vị cơ bản và nguyên liệu phụ
+          const basicSpices = ["muối", "tiêu", "đường", "bột ngọt", "mì chính", "nước mắm", "mắm", "hạt nêm", "nêm", "dầu ăn", "dầu", "nước tương", "xì dầu", "giấm", "dấm", "nước", "hành", "tỏi", "ớt", "gừng", "sả", "hành lá", "hành tây", "ngò", "rau thơm"];
           
           // Kiểm tra xem có nguyên liệu nào trong công thức mà KHÔNG có trong tủ lạnh không
           // VÀ nguyên liệu đó KHÔNG phải là gia vị cơ bản
@@ -150,17 +150,27 @@ function Pantry() {
             return isMissing && !isBasicSpice;
           });
 
-          return { ...recipe, matches, matchCount: matches.length, missingCount: missingIngredients.length };
+          // Phân loại matches: đâu là nguyên liệu chính, đâu là gia vị?
+          const mainMatches = matches.filter(m => !basicSpices.some(spice => m === spice || m.includes(spice)));
+
+          return { 
+            ...recipe, 
+            matches, 
+            mainMatchCount: mainMatches.length,
+            matchCount: matches.length, 
+            missingCount: missingIngredients.length 
+          };
         });
 
-          // Lọc: Ưu tiên những món nấu được (missingCount <= 2) và có dùng đồ trong tủ lạnh
-          const topMatches = scoredRecipes
-            .filter(r => r.matchCount > 0 && r.missingCount <= 2)
-            .sort((a, b) => b.matchCount - a.matchCount)
-            .slice(0, 8);
+        // Lọc: BẮT BUỘC phải có ít nhất 1 nguyên liệu CHÍNH khớp (mainMatchCount > 0)
+        // Số lượng nguyên liệu chính thiếu tối đa là 2 (missingCount <= 2)
+        const topMatches = scoredRecipes
+          .filter(r => r.mainMatchCount > 0 && r.missingCount <= 2)
+          .sort((a, b) => b.mainMatchCount - a.mainMatchCount || b.matchCount - a.matchCount)
+          .slice(0, 8);
   
-          // Nếu vẫn không có món nào khớp, lấy đại các món ngẫu nhiên
-          setRescueRecipes(topMatches.length > 0 ? topMatches : allRecipes.slice(0, 8));
+        // Nếu vẫn không có món nào khớp, lấy đại các món ngẫu nhiên
+        setRescueRecipes(topMatches.length > 0 ? topMatches : allRecipes.slice(0, 8));
       } else {
         setRescueRecipes(allRecipes.slice(0, 8));
       }
