@@ -139,10 +139,16 @@ function Pantry() {
             recipeIngredients.some(ri => ri.includes(pn) || pn.includes(ri))
           );
           
+          // Danh sách các gia vị cơ bản sẽ bị bỏ qua khi tính nguyên liệu thiếu
+          const basicSpices = ["muối", "tiêu", "đường", "bột ngọt", "mì chính", "nước mắm", "mắm", "hạt nêm", "nêm", "dầu ăn", "dầu", "nước tương", "xì dầu", "giấm", "dấm", "nước", "hành", "tỏi", "ớt", "gừng", "sả", "hành lá"];
+          
           // Kiểm tra xem có nguyên liệu nào trong công thức mà KHÔNG có trong tủ lạnh không
-          const missingIngredients = recipeIngredients.filter(ri => 
-            !pantryNames.some(pn => ri.includes(pn) || pn.includes(ri))
-          );
+          // VÀ nguyên liệu đó KHÔNG phải là gia vị cơ bản
+          const missingIngredients = recipeIngredients.filter(ri => {
+            const isMissing = !pantryNames.some(pn => ri.includes(pn) || pn.includes(ri));
+            const isBasicSpice = basicSpices.some(spice => ri === spice || ri.includes(spice));
+            return isMissing && !isBasicSpice;
+          });
 
           return { ...recipe, matches, matchCount: matches.length, missingCount: missingIngredients.length };
         });
