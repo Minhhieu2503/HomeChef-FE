@@ -49,3 +49,8 @@ export const consumeRecipe = async (id, servings = 1) => {
   const response = await api.post(`/recipes/${id}/consume`, { servings });
   return response; // contains { success: true, report: [...] }
 };
+
+export const generateAIRecommendations = async (userIngredients) => {
+  const response = await api.post("/recipes/generate-ai", { userIngredients });
+  return response.data;
+};

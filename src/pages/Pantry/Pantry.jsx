@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { getPantryItems, addPantryItem, updatePantryItem, deletePantryItem, scanIngredientImage } from "../../services/pantryService";
-import { getAllRecipes } from "../../services/recipeService";
+import { getAllRecipes, generateAIRecommendations } from "../../services/recipeService";
 import { authService } from "../../services/auth.service";
 import { useToast } from "../../context/ToastContext";
 import { Thermometer, Zap, AlertTriangle, ChevronRight, Plus, X, Package, Edit2, Trash2, Camera, Upload, Loader, ChefHat, Clock, Flame, CheckCircle2, Circle, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
@@ -18,6 +18,7 @@ function Pantry() {
   const [editingItem, setEditingItem] = useState(null);
   const [newItem, setNewItem] = useState({ name: "", quantity: "", unit: "g", category: "Other", emoji: "📦", expiryDate: "" });
   const [user, setUser] = useState(null);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   // --- Scan Feature States ---
   const [isScanModalOpen, setIsScanModalOpen] = useState(false);
@@ -178,6 +179,32 @@ function Pantry() {
       console.error("Pantry refresh error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateAI = async () => {
+    if (ingredients.length === 0) {
+      toast.error("Tủ lạnh của bạn đang trống! Hãy thêm nguyên liệu trước.");
+      return;
+    }
+    
+    setIsGeneratingAI(true);
+    try {
+      const userIngredients = ingredients.map(i => i.name);
+      const data = await generateAIRecommendations(userIngredients);
+      
+      if (data && data.data && data.data.length > 0) {
+        toast.success("Đã tìm thấy các món ăn mới từ AI!");
+        // Refresh the pantry recipes to load the newly saved ones
+        await fetchData();
+      } else {
+        toast.error("AI không thể tìm ra món ăn phù hợp lúc này.");
+      }
+    } catch (error) {
+      console.error("AI Generation Error:", error);
+      toast.error("Có lỗi xảy ra khi gọi AI. Vui lòng thử lại sau.");
+    } finally {
+      setIsGeneratingAI(false);
     }
   };
 
@@ -408,10 +435,24 @@ function Pantry() {
         {/* 3. Rescue Recipes */}
         {ingredients.length > 0 && (
           <section className="rescue-recipes-section">
-            <h3 translate="no">
-              <Zap size={20} className="text-orange-500" />
-              Giải cứu nguyên liệu
-            </h3>
+            <div className="section-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 translate="no" style={{ margin: 0 }}>
+                <Zap size={20} className="text-orange-500" />
+                Giải cứu nguyên liệu
+              </h3>
+              <button 
+                className="btn-ai-generate" 
+                onClick={handleGenerateAI}
+                disabled={isGeneratingAI}
+                style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)', color: 'white', padding: '6px 12px', borderRadius: '20px', border: 'none', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer', opacity: isGeneratingAI ? 0.7 : 1 }}
+              >
+                {isGeneratingAI ? (
+                  <><Loader size={14} className="spin" /> Đang sáng tạo...</>
+                ) : (
+                  <><Sparkles size={14} /> Tự tạo bằng AI</>
+                )}
+              </button>
+            </div>
             <div className="rescue-grid">
               {rescueRecipes.map(recipe => (
                 <Link to={`/recipes/${recipe._id}`} key={recipe._id} className="rescue-card">
