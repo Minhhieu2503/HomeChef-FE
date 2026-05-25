@@ -118,7 +118,7 @@ function Pantry() {
       // Fetch both simultaneously
       const [pantryRes, recipesRes] = await Promise.all([
         getPantryItems("All"),
-        getAllRecipes()
+        getAllRecipes({ limit: 100 })
       ]);
 
       const items = Array.isArray(pantryRes.data || pantryRes) ? (pantryRes.data || pantryRes) : [];
