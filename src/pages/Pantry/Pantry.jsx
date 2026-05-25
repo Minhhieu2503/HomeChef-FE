@@ -138,17 +138,23 @@ function Pantry() {
           const matches = pantryNames.filter(pn =>
             recipeIngredients.some(ri => ri.includes(pn) || pn.includes(ri))
           );
+          
+          // Kiểm tra xem có nguyên liệu nào trong công thức mà KHÔNG có trong tủ lạnh không
+          const missingIngredients = recipeIngredients.filter(ri => 
+            !pantryNames.some(pn => ri.includes(pn) || pn.includes(ri))
+          );
 
-          return { ...recipe, matches, matchCount: matches.length };
+          return { ...recipe, matches, matchCount: matches.length, missingCount: missingIngredients.length };
         });
 
-        // Sort by most matches first, then pick top 8
+        // Lọc nghiêm ngặt: chỉ lấy những món nấu được (missingCount === 0) và có dùng đồ trong tủ lạnh
         const topMatches = scoredRecipes
-          .filter(r => r.matchCount > 0)
+          .filter(r => r.matchCount > 0 && r.missingCount === 0)
           .sort((a, b) => b.matchCount - a.matchCount)
           .slice(0, 8);
 
-        setRescueRecipes(topMatches.length > 0 ? topMatches : allRecipes.slice(0, 8));
+        // Không fallback về allRecipes nữa để đảm bảo đúng yêu cầu
+        setRescueRecipes(topMatches);
       } else {
         setRescueRecipes(allRecipes.slice(0, 8));
       }
