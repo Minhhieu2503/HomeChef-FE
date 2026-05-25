@@ -1,18 +1,47 @@
 import api from "./api";
 
+// In-memory cache to speed up navigation
+const cache = {
+  allRecipes: null,
+  recommendedRecipes: null,
+  recipeById: {}
+};
+
 export const getAllRecipes = async (params = {}) => {
+  // If no params and cache exists, return cache instantly
+  if (Object.keys(params).length === 0 && cache.allRecipes) {
+    return cache.allRecipes;
+  }
+  
   const response = await api.get("/recipes", { params });
-  // Response interceptor yields { success: true, data: { recipes: [...] } }
+  
+  // Cache the default list of all recipes
+  if (Object.keys(params).length === 0) {
+    cache.allRecipes = response.data;
+  }
+  
   return response.data;
 };
 
 export const getRecommendedRecipes = async () => {
+  if (cache.recommendedRecipes) {
+    return cache.recommendedRecipes;
+  }
+  
   const response = await api.get("/recipes/recommended");
+  cache.recommendedRecipes = response.data;
+  
   return response.data;
 };
 
 export const getRecipeById = async (id) => {
+  if (cache.recipeById[id]) {
+    return cache.recipeById[id];
+  }
+
   const response = await api.get(`/recipes/${id}`);
+  cache.recipeById[id] = response.data;
+  
   return response.data;
 };
 

@@ -559,32 +559,51 @@
   margin: 0 1.5rem;
 }
 
+.is-native-app .dashboard-content-grid {
+  margin: 0;
+  gap: 1.5rem;
+}
+
 .is-native-app .trending-section {
   padding: 0 1.5rem;
 }
 
 .is-native-app .recipe-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
 }
 
 .is-native-app .recipe-card {
   display: flex;
   flex-direction: column;
-  border-radius: 24px;
+  border-radius: 20px;
   box-shadow: 0 8px 24px rgba(0,0,0,0.06);
 }
 
 .is-native-app .card-image-wrapper {
-  height: 220px;
+  height: 120px;
+}
+
+.is-native-app .recipe-card-content {
+  padding: 0.75rem;
+}
+
+.is-native-app .recipe-card-content h4 {
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.is-native-app .card-rating {
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
 .is-native-app .btn-start-cooking {
   background-color: var(--color-accent);
-  padding: 0.9rem;
-  border-radius: 14px;
-  font-size: 1rem;
+  padding: 0.6rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
 }
 
 .is-native-app .dashboard-sidebar {

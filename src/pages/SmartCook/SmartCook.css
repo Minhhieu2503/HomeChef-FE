@@ -272,3 +272,73 @@
   border-radius: var(--radius-lg);
   font-size: 1.1rem;
 }
+
+/* ============================================ */
+/* ===== MOBILE NATIVE APP OVERRIDES ====== */
+/* ============================================ */
+
+.is-native-app .smartcook-page {
+  padding: env(safe-area-inset-top, 20px) 1.5rem 1.5rem;
+}
+
+.is-native-app .sc-ingredients-list {
+  padding: 1rem;
+}
+
+.is-native-app .sc-recipe-card {
+  flex-direction: column;
+}
+
+.is-native-app .sc-recipe-img {
+  width: 100%;
+  height: 180px;
+}
+
+.is-native-app .sc-cooking-header {
+  padding: 0.5rem 0 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.is-native-app .sc-cooking-header h2 {
+  font-size: 1.1rem;
+}
+
+.is-native-app .sc-step-card {
+  padding: 2rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.is-native-app .sc-step-number {
+  width: 40px;
+  height: 40px;
+  top: -15px;
+  font-size: 1.2rem;
+}
+
+.is-native-app .sc-step-instruction {
+  font-size: 1.05rem;
+}
+
+.is-native-app .sc-step-controls {
+  flex-direction: column;
+}
+
+.is-native-app .sc-nav-btn {
+  padding: 0.9rem;
+  font-size: 1rem;
+  border-radius: 12px;
+}
+
+.is-native-app .sc-modal-content {
+  padding: 2rem 1.5rem;
+}
+
+.is-native-app .sc-calorie-circle {
+  width: 120px;
+  height: 120px;
+  margin: 1rem auto;
+}
+
+.is-native-app .sc-calorie-amount {
+  font-size: 2.5rem;
+}

@@ -394,3 +394,106 @@
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ============================================ */
+/* ===== MOBILE NATIVE APP OVERRIDES ====== */
+/* ============================================ */
+
+.is-native-app .recipe-discovery {
+  flex-direction: column;
+}
+
+.is-native-app .discovery-main {
+  padding: 0;
+  padding-top: env(safe-area-inset-top, 10px);
+  gap: 2rem;
+  padding-bottom: 2rem;
+}
+
+.is-native-app .discovery-search-wrapper {
+  padding: 1rem 1.5rem 0;
+}
+
+.is-native-app .filter-sidebar {
+  width: 100%;
+  height: auto;
+  border-left: none;
+  position: static;
+  padding: 0 1.5rem 1.5rem;
+  order: -1; /* Move filters up on mobile */
+  display: none; /* Hide filters by default on mobile to save space, but let them toggle it if implemented */
+}
+
+.is-native-app .recipe-of-day-banner {
+  height: 250px;
+  border-radius: 24px;
+  margin: 0 1.5rem;
+}
+
+.is-native-app .banner-content {
+  padding: 1.5rem;
+}
+
+.is-native-app .banner-content h2 {
+  font-size: 1.5rem;
+}
+
+.is-native-app .category-section {
+  padding-left: 1.5rem;
+}
+
+.is-native-app .carousel-container {
+  padding-right: 1.5rem;
+}
+
+.is-native-app .section-divider {
+  margin: 0 1.5rem;
+}
+
+.is-native-app .category-section h3 {
+  padding-right: 1.5rem;
+  font-size: 1.25rem;
+}
+
+.is-native-app .recipes-grid-discovery {
+  grid-template-columns: repeat(2, 1fr);
+  padding: 0 1.5rem;
+  gap: 1rem;
+}
+
+.is-native-app .recipe-card-discovery {
+  min-width: unset;
+  max-width: unset;
+  border-radius: 20px;
+}
+
+.is-native-app .card-image-discovery {
+  height: 120px;
+}
+
+.is-native-app .card-content-discovery {
+  padding: 0.75rem;
+}
+
+.is-native-app .card-content-discovery h4 {
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.is-native-app .card-meta-discovery {
+  font-size: 0.7rem;
+}
+
+.is-native-app .favorite-btn {
+  width: 28px;
+  height: 28px;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+.is-native-app .status-badge {
+  top: 0.5rem;
+  left: 0.5rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.6rem;
+}
