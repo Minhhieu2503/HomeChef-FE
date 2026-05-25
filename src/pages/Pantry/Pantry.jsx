@@ -153,14 +153,14 @@ function Pantry() {
           return { ...recipe, matches, matchCount: matches.length, missingCount: missingIngredients.length };
         });
 
-        // Lọc nghiêm ngặt: chỉ lấy những món nấu được (missingCount === 0) và có dùng đồ trong tủ lạnh
-        const topMatches = scoredRecipes
-          .filter(r => r.matchCount > 0 && r.missingCount === 0)
-          .sort((a, b) => b.matchCount - a.matchCount)
-          .slice(0, 8);
-
-        // Không fallback về allRecipes nữa để đảm bảo đúng yêu cầu
-        setRescueRecipes(topMatches);
+          // Lọc: Ưu tiên những món nấu được (missingCount <= 2) và có dùng đồ trong tủ lạnh
+          const topMatches = scoredRecipes
+            .filter(r => r.matchCount > 0 && r.missingCount <= 2)
+            .sort((a, b) => b.matchCount - a.matchCount)
+            .slice(0, 8);
+  
+          // Nếu vẫn không có món nào khớp, lấy đại các món ngẫu nhiên
+          setRescueRecipes(topMatches.length > 0 ? topMatches : allRecipes.slice(0, 8));
       } else {
         setRescueRecipes(allRecipes.slice(0, 8));
       }
