@@ -323,7 +323,55 @@ function Recipes() {
             <Sliders size={20} className="text-primary" />
             <h3 className="text-lg font-bold" translate="no">Bộ lọc nâng cao</h3>
           </div>
-          {/* ... existing filters ... */}
+          <div className="filter-group mb-6 mt-4">
+            <h4 className="font-semibold mb-3 text-sm">Thời gian nấu (tối đa)</h4>
+            <div className="flex items-center gap-4">
+              <input 
+                type="range" 
+                min="10" 
+                max="120" 
+                step="10"
+                value={prepTime}
+                onChange={(e) => setPrepTime(Number(e.target.value))}
+                className="w-full accent-primary"
+              />
+              <span className="text-sm font-medium whitespace-nowrap">{prepTime} phút</span>
+            </div>
+          </div>
+
+          <div className="filter-group mb-6">
+            <h4 className="font-semibold mb-3 text-sm">Độ khó</h4>
+            <div className="flex flex-col gap-2">
+              {["Easy", "Medium", "Hard"].map(level => (
+                <label key={level} className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={selectedDifficulty.includes(level)}
+                    onChange={() => handleDifficultyToggle(level)}
+                    className="rounded text-primary focus:ring-primary w-4 h-4"
+                  />
+                  <span className="text-sm">{level === "Easy" ? "Dễ" : level === "Medium" ? "Trung bình" : "Khó"}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="filter-group mb-6">
+            <h4 className="font-semibold mb-3 text-sm">Chế độ ăn</h4>
+            <div className="flex flex-col gap-2">
+              {["Vegan", "Keto", "Paleo", "Gluten-free", "Low Carb"].map(diet => (
+                <label key={diet} className="flex items-center gap-2 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={selectedDiets.includes(diet)}
+                    onChange={() => handleDietToggle(diet)}
+                    className="rounded text-primary focus:ring-primary w-4 h-4"
+                  />
+                  <span className="text-sm">{diet}</span>
+                </label>
+              ))}
+            </div>
+          </div>
         </aside>
       )}
     </div>
