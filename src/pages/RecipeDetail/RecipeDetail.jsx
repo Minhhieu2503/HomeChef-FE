@@ -117,9 +117,9 @@ function RecipeDetail() {
         {/* Nutrition Info Tiny Pills */}
         {recipe.nutrition && (
           <div className="nutrition-pills">
-            <span className="pill">Protein: <b>{recipe.nutrition.protein || "N/A"}</b></span>
-            <span className="pill">Carb: <b>{recipe.nutrition.carbs || "N/A"}</b></span>
-            <span className="pill">Fat: <b>{recipe.nutrition.fat || "N/A"}</b></span>
+            <span className="pill">Đạm: <b>{recipe.nutrition.protein || "N/A"}</b></span>
+            <span className="pill">Tinh bột: <b>{recipe.nutrition.carbs || "N/A"}</b></span>
+            <span className="pill">Béo: <b>{recipe.nutrition.fat || "N/A"}</b></span>
           </div>
         )}
 

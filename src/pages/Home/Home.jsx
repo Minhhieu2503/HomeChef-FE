@@ -13,7 +13,7 @@ function Dashboard() {
   const [allRecipes, setAllRecipes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState("All Recipes");
+  const [activeFilter, setActiveFilter] = useState("Tất cả");
   const [overview, setOverview] = useState({
     nutrition: { calories: { current: 0, goal: 2000 }, protein: { current: 0, goal: 80 } },
     groceries: []
@@ -207,8 +207,8 @@ function Dashboard() {
                   <div className="card-image-wrapper">
                     <img src={recipe.image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600"} alt={recipe.title} />
                     <div className="card-badges">
-                      <span className="badge badge-difficulty">{recipe.difficulty || "Medium"}</span>
-                      <span className="badge badge-time">{recipe.cookTime || 20} min</span>
+                      <span className="badge badge-difficulty">{recipe.difficulty === "Easy" ? "Dễ" : recipe.difficulty === "Hard" ? "Khó" : recipe.difficulty || "Trung bình"}</span>
+                      <span className="badge badge-time">{recipe.cookTime || 20} phút</span>
                     </div>
                   </div>
                   <div className="recipe-card-content">
@@ -238,7 +238,7 @@ function Dashboard() {
             <div className="nutrition-stats">
               <div className="stat-item">
                 <div className="stat-info">
-                  <span className="stat-label">Calories</span>
+                  <span className="stat-label">Calo</span>
                   <span className="stat-value">{overview.nutrition.calories.current.toLocaleString()} / {overview.nutrition.calories.goal.toLocaleString()} kcal</span>
                 </div>
                 <div className="progress-bar">
@@ -250,7 +250,7 @@ function Dashboard() {
               </div>
               <div className="stat-item">
                 <div className="stat-info">
-                  <span className="stat-label">Protein</span>
+                  <span className="stat-label">Đạm</span>
                   <span className="stat-value">{overview.nutrition.protein.current} / {overview.nutrition.protein.goal} g</span>
                 </div>
                 <div className="progress-bar">

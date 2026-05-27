@@ -48,7 +48,7 @@ function CookingMode({ recipe, onClose, onComplete }) {
         </div>
         <div className="header-top-row">
           <button className="btn-close-cooking" onClick={onClose}>✕</button>
-          <span className="step-count">Step {currentStepIndex + 1} of {totalSteps}</span>
+          <span className="step-count">Bước {currentStepIndex + 1} / {totalSteps}</span>
           <button className="btn-mute" onClick={() => setIsMuted(!isMuted)}>
             {isMuted ? "🔇" : "🔊"}
           </button>
@@ -80,14 +80,14 @@ function CookingMode({ recipe, onClose, onComplete }) {
         
         <div className="listening-badge">
           <div className="pulse-icon">🎤</div>
-          <span className="label">Listening</span>
+          <span className="label">Đang nghe</span>
         </div>
       </div>
 
       {/* TYPOGRAPHY AREA */}
       <div className="instruction-focus-area">
         <div className="instruction-content">
-          <p className="instruction-label">Instruction</p>
+          <p className="instruction-label">Hướng dẫn</p>
           <h1 className="instruction-main-text">
             {currentStep.instruction || currentStep.text || currentStep}
           </h1>
@@ -101,10 +101,10 @@ function CookingMode({ recipe, onClose, onComplete }) {
           disabled={currentStepIndex === 0}
           onClick={() => setCurrentStepIndex(currentStepIndex - 1)}
         >
-          Previous
+          Quay lại
         </button>
         <button className="nav-btn next" onClick={handleNext}>
-          {currentStepIndex === totalSteps - 1 ? "Finish Cooking" : "Next Step"}
+          {currentStepIndex === totalSteps - 1 ? "Hoàn thành" : "Bước tiếp theo"}
         </button>
       </div>
     </div>

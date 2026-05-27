@@ -319,13 +319,13 @@ function Recipes() {
       {/* 2. Filter Sidebar (Right) - Hidden on Mobile */}
       {!Capacitor.isNativePlatform() && (
         <aside className="filter-sidebar">
-          <div className="flex items-center gap-2 mb-6">
-            <Sliders size={20} className="text-primary" />
-            <h3 className="text-lg font-bold" translate="no">Bộ lọc nâng cao</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+            <Sliders size={20} style={{ color: 'var(--color-primary)' }} />
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800 }} translate="no">Bộ lọc nâng cao</h3>
           </div>
-          <div className="filter-group mb-6 mt-4">
-            <h4 className="font-semibold mb-3 text-sm">Thời gian nấu (tối đa)</h4>
-            <div className="flex items-center gap-4">
+          <div className="filter-group">
+            <h4>Thời gian nấu (tối đa)</h4>
+            <div className="range-slider-group">
               <input 
                 type="range" 
                 min="10" 
@@ -333,41 +333,41 @@ function Recipes() {
                 step="10"
                 value={prepTime}
                 onChange={(e) => setPrepTime(Number(e.target.value))}
-                className="w-full accent-primary"
               />
-              <span className="text-sm font-medium whitespace-nowrap">{prepTime} phút</span>
+              <div className="range-values">
+                <span>10 phút</span>
+                <span>{prepTime} phút</span>
+              </div>
             </div>
           </div>
 
-          <div className="filter-group mb-6">
-            <h4 className="font-semibold mb-3 text-sm">Độ khó</h4>
-            <div className="flex flex-col gap-2">
+          <div className="filter-group">
+            <h4>Độ khó</h4>
+            <div className="filter-options">
               {["Easy", "Medium", "Hard"].map(level => (
-                <label key={level} className="flex items-center gap-2 cursor-pointer">
+                <label key={level} className="checkbox-label">
                   <input 
                     type="checkbox" 
                     checked={selectedDifficulty.includes(level)}
                     onChange={() => handleDifficultyToggle(level)}
-                    className="rounded text-primary focus:ring-primary w-4 h-4"
                   />
-                  <span className="text-sm">{level === "Easy" ? "Dễ" : level === "Medium" ? "Trung bình" : "Khó"}</span>
+                  <span>{level === "Easy" ? "Dễ" : level === "Medium" ? "Trung bình" : "Khó"}</span>
                 </label>
               ))}
             </div>
           </div>
 
-          <div className="filter-group mb-6">
-            <h4 className="font-semibold mb-3 text-sm">Chế độ ăn</h4>
-            <div className="flex flex-col gap-2">
-              {["Vegan", "Keto", "Paleo", "Gluten-free", "Low Carb"].map(diet => (
-                <label key={diet} className="flex items-center gap-2 cursor-pointer">
+          <div className="filter-group">
+            <h4>Chế độ ăn</h4>
+            <div className="filter-options">
+              {[{id: "Vegan", label: "Thuần chay"}, {id: "Keto", label: "Keto"}, {id: "Paleo", label: "Paleo"}, {id: "Gluten-free", label: "Không chứa Gluten"}, {id: "Low Carb", label: "Ít tinh bột"}].map(diet => (
+                <label key={diet.id} className="checkbox-label">
                   <input 
                     type="checkbox" 
-                    checked={selectedDiets.includes(diet)}
-                    onChange={() => handleDietToggle(diet)}
-                    className="rounded text-primary focus:ring-primary w-4 h-4"
+                    checked={selectedDiets.includes(diet.id)}
+                    onChange={() => handleDietToggle(diet.id)}
                   />
-                  <span className="text-sm">{diet}</span>
+                  <span>{diet.label}</span>
                 </label>
               ))}
             </div>
