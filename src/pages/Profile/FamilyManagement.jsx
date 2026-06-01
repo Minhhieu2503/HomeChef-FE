@@ -1,22 +1,25 @@
 import { useState, useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import api from "../../services/api";
+import { authService } from "../../services/auth.service";
 import { Users, UserPlus, Trash2, PieChart, Crown } from "lucide-react";
 import "./Family.css";
 
 function FamilyManagement() {
-  const { user } = useAuth();
   const toast = useToast();
+  const [user, setUser] = useState(null);
   const [family, setFamily] = useState(null);
   const [loading, setLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState("");
 
-  const fetchFamily = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/family/me");
-      setFamily(res.data.data);
+      const meRes = await authService.getMe();
+      if (meRes.success) setUser(meRes.data);
+
+      const familyRes = await api.get("/family/me");
+      setFamily(familyRes.data.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -25,14 +28,14 @@ function FamilyManagement() {
   };
 
   useEffect(() => {
-    fetchFamily();
+    loadData();
   }, []);
 
   const handleCreateFamily = async () => {
     try {
       await api.post("/family/create", { name: `Gia đình của ${user?.name}` });
       toast.success("Đã tạo nhóm gia đình thành công");
-      fetchFamily();
+      loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || "Lỗi tạo gia đình");
     }
@@ -45,7 +48,7 @@ function FamilyManagement() {
       await api.post("/family/invite", { email: inviteEmail });
       toast.success(`Đã thêm ${inviteEmail} vào gia đình`);
       setInviteEmail("");
-      fetchFamily();
+      loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || "Lỗi mời thành viên");
     }
@@ -56,7 +59,7 @@ function FamilyManagement() {
     try {
       await api.delete(`/family/member/${memberId}`);
       toast.success("Đã xóa thành viên");
-      fetchFamily();
+      loadData();
     } catch (err) {
       toast.error(err.response?.data?.message || "Lỗi xóa thành viên");
     }

@@ -1,15 +1,27 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Check, Sparkles, Zap, Shield, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
-import { useAuth } from '../../context/AuthContext';
+import { authService } from '../../services/auth.service';
 import { paymentService } from '../../services/paymentService';
 import './Pricing.css';
 
 const Pricing = () => {
   const navigate = useNavigate();
   const toast = useToast();
-  const { user } = useAuth();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await authService.getMe();
+        if (res.success) setUser(res.data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const plans = [
     {

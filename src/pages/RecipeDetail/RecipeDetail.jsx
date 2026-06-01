@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getRecipeById, consumeRecipe } from "../../services/recipeService";
+import { authService } from "../../services/auth.service";
 import { useToast } from "../../context/ToastContext";
 import CookingMode from "./CookingMode";
-import { useAuth } from "../../context/AuthContext";
 import "./RecipeDetail.css";
 
 function RecipeDetail() {
@@ -12,8 +12,8 @@ function RecipeDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = location; 
-  const { user } = useAuth();
 
+  const [user, setUser] = useState(null);
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
   const [servings, setServings] = useState(1);
@@ -25,6 +25,13 @@ function RecipeDetail() {
 
   useEffect(() => {
     const loadData = async () => {
+      try {
+        const meRes = await authService.getMe();
+        if (meRes.success) setUser(meRes.data);
+      } catch (err) {
+        console.error(err);
+      }
+
       // Check if this is an AI-generated recipe passed via state
       if (id === 'custom-ai-recipe' && state?.aiRecipe) {
         setRecipe(state.aiRecipe);
