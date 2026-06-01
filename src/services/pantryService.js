@@ -24,11 +24,9 @@ export const scanIngredientImage = async (imageFile) => {
   const formData = new FormData();
   formData.append("image", imageFile);
   
-  // Use direct axios or standard fetch if multipart requires override
-  const response = await api.post("/vision/scan", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  return response.data;
+  // Axios automatically sets the correct Content-Type with boundary for FormData
+  const response = await api.post("/vision/scan", formData);
+  
+  // The interceptor already unwraps response.data, so we just return response
+  return response;
 };

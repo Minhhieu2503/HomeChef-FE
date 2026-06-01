@@ -1,0 +1,41 @@
+.family-page {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.family-header h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.members-card, .nutrition-card {
+  background: white;
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.members-card h3, .nutrition-card h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #334155;
+  margin: 0;
+}
+
+.members-card ul li {
+  transition: transform 0.2s;
+}
+
+.members-card ul li:hover {
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .family-page {
+    padding: 1rem;
+    padding-bottom: 5rem; /* Space for mobile nav */
+  }
+}

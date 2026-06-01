@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { getRecipeById, consumeRecipe } from "../../services/recipeService";
 import { useToast } from "../../context/ToastContext";
 import CookingMode from "./CookingMode";
+import { useAuth } from "../../context/AuthContext";
 import "./RecipeDetail.css";
 
 function RecipeDetail() {
@@ -11,6 +12,7 @@ function RecipeDetail() {
   const navigate = useNavigate();
   const location = useLocation();
   const { state } = location; 
+  const { user } = useAuth();
 
   const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -128,11 +130,22 @@ function RecipeDetail() {
         {/* WIDGET: Hands-free Cooking Mode */}
         <div className="hands-free-widget">
           <div className="hf-info">
-            <h4>🗣️ Chế độ rảnh tay (Beta)</h4>
-            <span className="text-xs">Phóng to chữ & điều khiển bằng giọng nói</span>
+            <h4>🗣️ Chế độ rảnh tay (Premium)</h4>
+            <span className="text-xs">Phóng to chữ & tự động chuyển bước</span>
           </div>
           <label className="switch">
-            <input type="checkbox" checked={handsFree} onChange={() => setHandsFree(!handsFree)} />
+            <input 
+              type="checkbox" 
+              checked={handsFree} 
+              onChange={() => {
+                if (user?.plan === 'free') {
+                  toast.info('Chế độ Nấu rảnh tay chỉ dành cho gói Premium/Family. Đang chuyển hướng...');
+                  setTimeout(() => navigate('/pricing'), 2000);
+                  return;
+                }
+                setHandsFree(!handsFree);
+              }} 
+            />
             <span className="slider round"></span>
           </label>
         </div>

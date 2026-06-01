@@ -14,6 +14,7 @@ import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
 import ForgotPassword from "./pages/ForgotPassword/ForgotPassword";
 import Profile from "./pages/Profile/Profile";
+import FamilyManagement from "./pages/Profile/FamilyManagement";
 import SmartCook from "./pages/SmartCook/SmartCook";
 import AdminLayout from "./pages/Admin/AdminLayout";
 import Pricing from "./pages/Pricing/Pricing";
@@ -118,6 +119,7 @@ function App() {
                     <Route path="/pantry" element={<Pantry />} />
                     <Route path="/shopping-list" element={<ShoppingList />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route path="/profile/family" element={<FamilyManagement />} />
                     <Route path="/smart-cook" element={<SmartCook />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/payment-result" element={<PaymentResult />} />

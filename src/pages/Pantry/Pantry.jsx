@@ -183,6 +183,11 @@ function Pantry() {
   };
 
   const handleGenerateAI = async () => {
+    if (user?.plan === 'free') {
+      setIsUpgradeModalOpen(true);
+      return;
+    }
+    
     if (ingredients.length === 0) {
       toast.error("Tủ lạnh của bạn đang trống! Hãy thêm nguyên liệu trước.");
       return;
@@ -741,7 +746,7 @@ function Pantry() {
                 <Sparkles size={40} className="text-yellow-400" />
               </div>
               <h3>Trải nghiệm Full tính năng</h3>
-              <p>Bạn đã sử dụng hết 3 lượt dùng thử miễn phí.</p>
+              <p>Tính năng này chỉ dành cho tài khoản Premium. Hãy nâng cấp để trải nghiệm!</p>
             </div>
             
             <div className="upgrade-benefits">

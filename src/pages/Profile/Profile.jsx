@@ -5,7 +5,7 @@ import { authUtils } from "../../utils/authUtils";
 import {
   User, Shield, Mail, CreditCard, Flame, UtensilsCrossed,
   Settings, ChevronRight, Edit3, Target, PieChart, Info, X,
-  Camera, Upload
+  Camera, Upload, Users
 } from "lucide-react";
 import "./Profile.css";
 
@@ -279,11 +279,19 @@ function Profile() {
               </div>
               <ChevronRight size={18} className="text-muted" />
             </div>
+            <div className="setting-item" onClick={() => navigate('/profile/family')}>
+              <div className="setting-icon"><Users size={20} /></div>
+              <div className="setting-text">
+                <span className="title">Gia đình & Chia sẻ</span>
+                <span className="subtitle">Quản lý thành viên, thực đơn chung</span>
+              </div>
+              <ChevronRight size={18} className="text-muted" />
+            </div>
             <div className="setting-item" onClick={() => alert('Quản lý thanh toán')}>
               <div className="setting-icon"><CreditCard size={20} /></div>
               <div className="setting-text">
-                <span className="title">Thanh toán</span>
-                <span className="subtitle">Lịch sử, Phương thức</span>
+                <span className="title">Thanh toán & Gói cước</span>
+                <span className="subtitle">{user?.plan === 'family' ? 'Gói Family' : user?.plan === 'premium' ? 'Gói Premium' : 'Gói Miễn phí'}</span>
               </div>
               <ChevronRight size={18} className="text-muted" />
             </div>

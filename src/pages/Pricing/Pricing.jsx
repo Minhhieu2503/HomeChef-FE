@@ -2,12 +2,14 @@ import React from 'react';
 import { Check, Sparkles, Zap, Shield, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
+import { useAuth } from '../../context/AuthContext';
 import { paymentService } from '../../services/paymentService';
 import './Pricing.css';
 
 const Pricing = () => {
   const navigate = useNavigate();
   const toast = useToast();
+  const { user } = useAuth();
 
   const plans = [
     {
@@ -67,8 +69,13 @@ const Pricing = () => {
 
   const handleSelectPlan = async (plan) => {
     console.log("Selecting plan:", plan);
-    if (!plan.isPremium) {
+    if (user?.plan === plan.id || (!user?.plan && plan.id === 'free')) {
       toast.info('Bạn đang sử dụng gói này.');
+      return;
+    }
+    
+    if (plan.id === 'free') {
+      toast.info('Tính năng hạ cấp đang được phát triển.');
       return;
     }
     
@@ -127,11 +134,11 @@ const Pricing = () => {
             </ul>
 
             <button 
-              className={`plan-button ${plan.isPremium ? 'btn-premium' : 'btn-free'}`}
+              className={`plan-button ${user?.plan === plan.id || (!user?.plan && plan.id === 'free') ? 'btn-free' : 'btn-premium'}`}
               onClick={() => handleSelectPlan(plan)}
             >
-              {plan.buttonText}
-              {plan.isPremium && <ChevronRight size={18} />}
+              {user?.plan === plan.id || (!user?.plan && plan.id === 'free') ? 'Đang sử dụng' : plan.buttonText}
+              {user?.plan !== plan.id && plan.id !== 'free' && <ChevronRight size={18} />}
             </button>
           </div>
         ))}
