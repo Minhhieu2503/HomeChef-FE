@@ -5,6 +5,7 @@ import { authService } from "../../services/auth.service";
 import { getAllRecipes } from "../../services/recipeService";
 import { getDashboardOverview } from "../../services/dashboardService";
 import { updateShoppingItem } from "../../services/shoppingService";
+import { getNotifications, markAsRead, markAllAsRead } from "../../services/notificationService";
 import { Bell, Search, Clock, Flame, ChevronRight, Star, CheckCircle2 } from "lucide-react";
 import "./Home.css";
 
@@ -18,16 +19,19 @@ function Dashboard() {
     nutrition: { calories: { current: 0, goal: 2000 }, protein: { current: 0, goal: 80 } },
     groceries: []
   });
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const loadDashboardData = async () => {
       try {
         setLoading(true);
-        const [profileRes, recipesData, overviewData] = await Promise.all([
+        const [profileRes, recipesData, overviewData, notifRes] = await Promise.all([
           authService.getMe(),
           getAllRecipes(),
-          getDashboardOverview()
+          getDashboardOverview(),
+          getNotifications().catch(err => ({ success: false, data: [] }))
         ]);
 
         if (profileRes.success) setUser(profileRes.data);
@@ -37,6 +41,10 @@ function Dashboard() {
 
         if (overviewData.success) {
           setOverview(overviewData.data);
+        }
+
+        if (notifRes.success) {
+          setNotifications(notifRes.data);
         }
       } catch (error) {
         console.error("Dashboard loading error:", error);
@@ -85,6 +93,84 @@ function Dashboard() {
     }
   };
 
+  const handleMarkAsRead = async (id) => {
+    try {
+      setNotifications(prev =>
+        prev.map(n => (n._id === id ? { ...n, isRead: true } : n))
+      );
+      await markAsRead(id);
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      await markAllAsRead();
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  const NotificationBell = () => (
+    <div className="notification-wrapper">
+      <button 
+        className="notification-btn" 
+        title="Thông báo" 
+        onClick={() => setShowNotifications(!showNotifications)}
+      >
+        <Bell size={24} />
+        {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+      </button>
+
+      {showNotifications && (
+        <div className="notification-dropdown">
+          <div className="dropdown-header">
+            <h3>Thông báo</h3>
+            {unreadCount > 0 && (
+              <button onClick={handleMarkAllAsRead} className="mark-all-read-btn">
+                Đọc tất cả
+              </button>
+            )}
+          </div>
+          <div className="dropdown-body">
+            {notifications.length === 0 ? (
+              <p className="no-notifications">Không có thông báo nào</p>
+            ) : (
+              notifications.map(notif => (
+                <div 
+                  key={notif._id} 
+                  className={`notification-item ${notif.isRead ? 'read' : 'unread'}`}
+                  onClick={() => {
+                    handleMarkAsRead(notif._id);
+                    setShowNotifications(false);
+                  }}
+                >
+                  <div className="notif-content">
+                    <h4 className="notif-title">
+                      {notif.title}
+                      {!notif.isRead && <span className="unread-dot"></span>}
+                    </h4>
+                    <p className="notif-message">{notif.message}</p>
+                    <span className="notif-time">
+                      {new Date(notif.createdAt).toLocaleDateString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit"
+                      })}
+                    </span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   const trendingRecipes = filteredRecipes.slice(0, 4);
 
   return (
@@ -110,10 +196,7 @@ function Dashboard() {
             </form>
 
             <div className="header-actions">
-              <button className="notification-btn" title="Thông báo" onClick={() => alert('Hiện tại bạn không có thông báo mới.')}>
-                <Bell size={24} />
-                <span className="notification-badge"></span>
-              </button>
+              <NotificationBell />
               <div className="user-profile-summary" onClick={() => navigate('/profile')}>
                 <img
                   src={user?.avatar || "https://ui-avatars.com/api/?name=User&background=4ADE80&color=fff"}
@@ -139,15 +222,18 @@ function Dashboard() {
                 <span className="user-name-pro">{user?.name?.split(' ')[0] || "Đầu bếp"}!</span>
               </div>
             </div>
-            <div className="mobile-nutrition-circle" onClick={() => navigate('/meal-planner')}>
-              <div className="circle-inner">
-                <span className="circle-percent">{Math.round((overview.nutrition.calories.current / overview.nutrition.calories.goal) * 100) || 0}%</span>
-                <span className="circle-label">Mục tiêu</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+              <NotificationBell />
+              <div className="mobile-nutrition-circle" onClick={() => navigate('/meal-planner')}>
+                <div className="circle-inner">
+                  <span className="circle-percent">{Math.round((overview.nutrition.calories.current / overview.nutrition.calories.goal) * 100) || 0}%</span>
+                  <span className="circle-label">Mục tiêu</span>
+                </div>
+                <svg className="circle-svg">
+                  <circle cx="22" cy="22" r="20" className="circle-bg" />
+                  <circle cx="22" cy="22" r="20" className="circle-fill" style={{ strokeDasharray: `${Math.min(100, (overview.nutrition.calories.current / overview.nutrition.calories.goal) * 100) * 1.25}, 126` }} />
+                </svg>
               </div>
-              <svg className="circle-svg">
-                <circle cx="22" cy="22" r="20" className="circle-bg" />
-                <circle cx="22" cy="22" r="20" className="circle-fill" style={{ strokeDasharray: `${Math.min(100, (overview.nutrition.calories.current / overview.nutrition.calories.goal) * 100) * 1.25}, 126` }} />
-              </svg>
             </div>
           </div>
           <form className="mobile-smart-search" onSubmit={handleSearch}>
