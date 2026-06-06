@@ -309,11 +309,84 @@ function Pantry() {
     setNewItem({ name: "", quantity: "", unit: "g", category: "Other", emoji: "📦", expiryDate: "" });
   };
 
+  const getDefaultShelfLife = (name) => {
+    const lower = (name || "").toLowerCase().trim();
+    if (lower.includes("cá") || lower.includes("tôm") || lower.includes("mực") || lower.includes("hải sản")) {
+      return 3; // Fresh seafood: 3 days
+    }
+    if (lower.includes("thịt") || lower.includes("gà") || lower.includes("heo") || lower.includes("bò") || lower.includes("sườn") || lower.includes("chả")) {
+      return 4; // Fresh meat: 4 days
+    }
+    if (lower.includes("sữa") || lower.includes("bơ") || lower.includes("phô mai") || lower.includes("sữa chua") || lower.includes("trứng")) {
+      return 7; // Dairy & Eggs: 7 days
+    }
+    if (lower.includes("rau") || lower.includes("xà lách") || lower.includes("hành lá") || lower.includes("ngò") || lower.includes("nấm") || lower.includes("cà chua") || lower.includes("dưa cải") || lower.includes("dưa chuột") || lower.includes("giá đỗ")) {
+      return 5; // Vegetables, greens, mushrooms: 5 days
+    }
+    if (lower.includes("củ") || lower.includes("cà rốt") || lower.includes("khoai") || lower.includes("bí") || lower.includes("hành tây") || lower.includes("tỏi") || lower.includes("gừng") || lower.includes("xoài") || lower.includes("táo") || lower.includes("cam") || lower.includes("chanh") || lower.includes("dưa cải muối")) {
+      return 14; // Hard root veggies & fruits: 14 days
+    }
+    if (lower.includes("hộp") || lower.includes("lon") || lower.includes("khô") || lower.includes("mì") || lower.includes("gia vị") || lower.includes("dầu") || lower.includes("mắm") || lower.includes("đường") || lower.includes("muối")) {
+      return 180; // Canned, dry goods: 180 days
+    }
+    return 7; // Default other: 7 days
+  };
+
+  const handleNameChange = (name) => {
+    const shelfLife = getDefaultShelfLife(name);
+    const calculatedExpiry = new Date(Date.now() + shelfLife * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0];
+    
+    // Automatically match category & emoji
+    let category = "Other";
+    let emoji = "📦";
+    const lower = name.toLowerCase().trim();
+    if (lower.includes("cá") || lower.includes("tôm") || lower.includes("mực") || lower.includes("hải sản") || lower.includes("thịt") || lower.includes("gà") || lower.includes("heo") || lower.includes("bò") || lower.includes("sườn") || lower.includes("chả")) {
+      category = "Meat";
+      if (lower.includes("cá")) emoji = "🐟";
+      else if (lower.includes("tôm")) emoji = "🍤";
+      else if (lower.includes("gà")) emoji = "🍗";
+      else emoji = "🥩";
+    } else if (lower.includes("rau") || lower.includes("xà lách") || lower.includes("hành lá") || lower.includes("ngò") || lower.includes("nấm") || lower.includes("cà chua") || lower.includes("dưa cải") || lower.includes("dưa chuột") || lower.includes("giá đỗ") || lower.includes("củ") || lower.includes("cà rốt") || lower.includes("khoai") || lower.includes("bí") || lower.includes("hành tây") || lower.includes("tỏi") || lower.includes("gừng")) {
+      category = "Vegetable";
+      if (lower.includes("rau") || lower.includes("xà lách")) emoji = "🥬";
+      else if (lower.includes("nấm")) emoji = "🍄";
+      else if (lower.includes("cà chua")) emoji = "🍅";
+      else if (lower.includes("dưa chuột") || lower.includes("bí")) emoji = "🥒";
+      else if (lower.includes("cà rốt") || lower.includes("củ")) emoji = "🥕";
+      else if (lower.includes("khoai")) emoji = "🥔";
+      else if (lower.includes("hành tây") || lower.includes("tỏi")) emoji = "🧅";
+    } else if (lower.includes("xoài") || lower.includes("táo") || lower.includes("cam") || lower.includes("chanh")) {
+      category = "Fruit";
+      if (lower.includes("xoài")) emoji = "🥭";
+      else if (lower.includes("táo")) emoji = "🍎";
+      else if (lower.includes("cam")) emoji = "🍊";
+      else if (lower.includes("chanh")) emoji = "🍋";
+    } else if (lower.includes("sữa") || lower.includes("bơ") || lower.includes("phô mai") || lower.includes("sữa chua") || lower.includes("trứng")) {
+      category = "Dairy";
+      if (lower.includes("trứng")) emoji = "🥚";
+      else if (lower.includes("sữa")) emoji = "🥛";
+      else emoji = "🧈";
+    } else if (lower.includes("gia vị") || lower.includes("đường") || lower.includes("muối") || lower.includes("tiêu") || lower.includes("nước mắm") || lower.includes("mì chính") || lower.includes("hạt nêm") || lower.includes("tương")) {
+      category = "Spice";
+      emoji = "🧂";
+    }
+
+    setNewItem(prev => ({
+      ...prev,
+      name,
+      category,
+      emoji,
+      expiryDate: calculatedExpiry
+    }));
+  };
+
   const getFreshnessColor = (days) => {
-    if (days < 0) return "#1f2937"; // Expired
-    if (days <= 2) return "#ef4444";
-    if (days <= 5) return "#f59e0b";
-    return "#22c55e";
+    if (days < 0) return "#dc2626"; // Red (Expired)
+    if (days <= 2) return "#ef4444"; // Orange-Red (Near Expiring)
+    if (days <= 5) return "#eab308"; // Amber/Yellow
+    return "#22c55e"; // Green (Fresh)
   };
 
   return (
@@ -395,6 +468,11 @@ function Pantry() {
                 if (item.expiryDate) {
                   const diffTime = new Date(item.expiryDate) - new Date();
                   daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                } else {
+                  // Fallback estimate based on typical category shelf life
+                  const ageInDays = Math.floor((new Date() - new Date(item.createdAt || Date.now())) / (1000 * 60 * 60 * 24));
+                  const defaultShelfLife = getDefaultShelfLife(item.name);
+                  daysLeft = defaultShelfLife - ageInDays;
                 }
                 const color = getFreshnessColor(daysLeft);
                 const displayName = item.name && item.name.length > 1 ? item.name : "Nguyên liệu mới";
@@ -411,10 +489,16 @@ function Pantry() {
                         <div className="freshness-bar-container">
                           <div
                             className="freshness-bar-fill"
-                            style={{ width: `${Math.min(daysLeft * 10, 100)}%`, backgroundColor: color }}
+                            style={{ width: `${Math.min(Math.max(0, daysLeft) * 10, 100)}%`, backgroundColor: color }}
                           ></div>
                         </div>
-                        <span className="freshness-text" style={{ color }}>{daysLeft} ngày nữa</span>
+                        <span className="freshness-text" style={{ color, fontWeight: "600" }}>
+                          {daysLeft < 0 
+                            ? `Quá hạn ${Math.abs(daysLeft)} ngày 🚨` 
+                            : daysLeft === 0 
+                              ? "Hết hạn hôm nay ⚠️" 
+                              : `Còn ${daysLeft} ngày`}
+                        </span>
                       </div>
                     </div>
                     <div className="card-actions">
@@ -499,7 +583,7 @@ function Pantry() {
                   type="text"
                   placeholder="Ví dụ: Cà chua, Thịt bò..."
                   value={newItem.name}
-                  onChange={e => setNewItem({ ...newItem, name: e.target.value })}
+                  onChange={e => handleNameChange(e.target.value)}
                   required
                 />
               </div>
