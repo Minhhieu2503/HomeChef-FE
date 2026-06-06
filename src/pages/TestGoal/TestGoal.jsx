@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { authService } from "../../services/auth.service";
 import { getRecommendedRecipes, generateAIRecommendations } from "../../services/recipeService";
 import { getPantryItems } from "../../services/pantryService";
 import "./TestGoal.css";
 
 function TestGoal() {
+  const navigate = useNavigate();
   // Try to load cached data for instant page rendering
   const getCachedData = () => {
     try {
@@ -29,6 +31,9 @@ function TestGoal() {
   const [statusMsg, setStatusMsg] = useState("");
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [completedSteps, setCompletedSteps] = useState({});
+  const [activeVoiceStep, setActiveVoiceStep] = useState(null);
+  const [showVoiceAssistant, setShowVoiceAssistant] = useState(false);
+  const [showSubscriptionPitch, setShowSubscriptionPitch] = useState(false);
 
   useEffect(() => {
     setCompletedSteps({});
@@ -467,6 +472,37 @@ function TestGoal() {
                 <p className="recipe-modal-description">{selectedRecipe.description}</p>
               )}
 
+              {/* Green & Saving Impact Widget */}
+              <div className="green-impact-widget">
+                <h3 className="section-title">🌱 Chỉ Số Sức Khỏe Xanh & Tiết Kiệm</h3>
+                <div className="impact-cards-grid">
+                  <div className="impact-card-box green">
+                    <div className="impact-box-icon">♻️</div>
+                    <div className="impact-box-info">
+                      <h4>Tận dụng tủ lạnh</h4>
+                      <p>Sử dụng <strong>{selectedRecipe.ingredients?.filter(i => i.quantity !== "Cần mua thêm").length || 0}</strong> nguyên liệu có sẵn</p>
+                    </div>
+                  </div>
+                  <div className="impact-card-box money">
+                    <div className="impact-box-icon">💰</div>
+                    <div className="impact-box-info">
+                      <h4>Tiết kiệm chi phí</h4>
+                      <p>Tránh lãng phí thực phẩm: <strong>~{((selectedRecipe.ingredients?.filter(i => i.quantity !== "Cần mua thêm").length || 0) * 35000).toLocaleString('vi-VN')} đ</strong></p>
+                    </div>
+                  </div>
+                  <div className="impact-card-box co2">
+                    <div className="impact-box-icon">🌍</div>
+                    <div className="impact-box-info">
+                      <h4>Giảm khí thải CO₂</h4>
+                      <p>Giảm thiểu phát thải: <strong>~{((selectedRecipe.ingredients?.filter(i => i.quantity !== "Cần mua thêm").length || 0) * 0.4).toFixed(1)} kg CO₂</strong></p>
+                    </div>
+                  </div>
+                </div>
+                <div className="premium-lock-banner">
+                  <span>🔒 Phân tích đầy đủ lượng nước & năng lượng tiêu thụ (Hội viên Premium)</span>
+                </div>
+              </div>
+
               {/* Nutrition progress charts */}
               <div>
                 <h3 className="section-title">📊 Biểu Đồ Dinh Dưỡng</h3>
@@ -567,12 +603,110 @@ function TestGoal() {
               <button 
                 className="btn-cook-action"
                 onClick={() => {
-                  setStatusMsg(`🔥 Đang chuẩn bị gia vị và nấu thử món: ${selectedRecipe.title}! Chúc bạn ngon miệng!`);
                   setSelectedRecipe(null);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  setActiveVoiceStep(1);
+                  setShowVoiceAssistant(true);
                 }}
               >
-                🍳 Bắt Đầu Nấu Thử
+                🎙️ Bắt Đầu Nấu Rảnh Tay (Bản dùng thử)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VOICE COOKING ASSISTANT MODAL */}
+      {showVoiceAssistant && selectedRecipe && (
+        <div className="voice-modal-backdrop" onClick={() => setShowVoiceAssistant(false)}>
+          <div className="voice-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="voice-modal-header">
+              <h3>🎙️ Trợ Lý Giọng Nói Home Chef</h3>
+              <span className="voice-badge">Dùng thử miễn phí</span>
+            </div>
+            
+            <div className="voice-listening-indicator">
+              <div className="pulse-ring"></div>
+              <div className="mic-icon">🎙️</div>
+              <div className="listening-text">Đang lắng nghe khẩu lệnh: "Tiếp theo", "Quay lại"...</div>
+            </div>
+
+            <div className="voice-step-card">
+              <div className="voice-step-header">
+                Bước {activeVoiceStep} / {selectedRecipe.steps?.length || 1}
+              </div>
+              <p className="voice-step-text">
+                {selectedRecipe.steps?.find(s => s.order === activeVoiceStep)?.instruction || "Đang tải bước nấu tiếp theo..."}
+              </p>
+            </div>
+
+            <div className="voice-actions">
+              <button 
+                className="btn-voice-nav" 
+                disabled={activeVoiceStep <= 1}
+                onClick={() => setActiveVoiceStep(prev => prev - 1)}
+              >
+                ⬅️ Quay lại
+              </button>
+              <button 
+                className="btn-voice-nav primary"
+                onClick={() => {
+                  if (activeVoiceStep >= (selectedRecipe.steps?.length || 1)) {
+                    setShowVoiceAssistant(false);
+                    setShowSubscriptionPitch(true);
+                  } else {
+                    setActiveVoiceStep(prev => prev + 1);
+                  }
+                }}
+              >
+                {activeVoiceStep === (selectedRecipe.steps?.length || 1) ? "Hoàn thành 🎉" : "Tiếp theo ➡️"}
+              </button>
+            </div>
+
+            <button className="btn-close-voice" onClick={() => setShowVoiceAssistant(false)}>Đóng</button>
+          </div>
+        </div>
+      )}
+
+      {/* SUBSCRIPTION PITCH MODAL */}
+      {showSubscriptionPitch && (
+        <div className="pitch-modal-backdrop" onClick={() => setShowSubscriptionPitch(false)}>
+          <div className="pitch-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="pitch-icon">🏆</div>
+            <h2>Mở Khóa Trải Nghiệm Nấu Ăn Không Giới Hạn!</h2>
+            <p className="pitch-desc">
+              Trải nghiệm điều khiển đứng bếp bằng giọng nói rảnh tay thật tuyệt vời đúng không? Hãy nâng cấp lên tài khoản **Premium** hoặc **Family Plan** để:
+            </p>
+            
+            <ul className="pitch-features">
+              <li>✨ Sử dụng Trợ Lý Giọng Nói không giới hạn (rất tiện lợi khi dính nước/dầu mỡ).</li>
+              <li>🌱 Xem đầy đủ Phân tích Dinh dưỡng Vi lượng & Cảnh báo Sức khỏe.</li>
+              <li>🗓️ Lên kế hoạch thực đơn tự động cho cả gia đình trong 7 ngày.</li>
+              <li>🛒 Tự động điền giỏ mua sắm và chia sẻ danh sách đi chợ thành viên.</li>
+            </ul>
+
+            <div className="pitch-pricing-options">
+              <div className="pitch-option">
+                <div className="option-name">Premium cá nhân</div>
+                <div className="option-price">49k/tháng</div>
+              </div>
+              <div className="pitch-option popular">
+                <div className="option-badge">Phổ biến nhất</div>
+                <div className="option-name">Family Plan (5 thành viên)</div>
+                <div className="option-price">99k/tháng</div>
+              </div>
+            </div>
+
+            <div className="pitch-actions">
+              <button className="btn-pitch-upgrade" onClick={() => {
+                setShowSubscriptionPitch(false);
+                navigate("/pricing");
+              }}>
+                🚀 Nâng cấp ngay
+              </button>
+              <button className="btn-pitch-cancel" onClick={() => {
+                setShowSubscriptionPitch(false);
+              }}>
+                Trải nghiệm sau
               </button>
             </div>
           </div>
