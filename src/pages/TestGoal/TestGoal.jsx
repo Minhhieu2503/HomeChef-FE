@@ -25,7 +25,7 @@ function TestGoal() {
   const [loading, setLoading] = useState(!cached); // only show spinner if no cache
   const [updating, setUpdating] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiRecipes, setAiRecipes] = useState([]);
+  const [aiRecipes, setAiRecipes] = useState(cached?.aiRecipes || []);
   const [statusMsg, setStatusMsg] = useState("");
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [completedSteps, setCompletedSteps] = useState({});
@@ -77,7 +77,8 @@ function TestGoal() {
         user: nextUser,
         goal: nextGoal,
         recipes: nextRecipes,
-        pantryItems: nextPantryItems
+        pantryItems: nextPantryItems,
+        aiRecipes: cached?.aiRecipes || []
       }));
 
     } catch (error) {
@@ -115,7 +116,8 @@ function TestGoal() {
           user: nextUser,
           goal: nextGoal,
           recipes: recData || [],
-          pantryItems: pantryItems
+          pantryItems: pantryItems,
+          aiRecipes: cached?.aiRecipes || []
         }));
 
         setStatusMsg(`Đã cập nhật thực đơn phù hợp cho: ${getGoalLabel(targetGoal)}!`);
@@ -145,8 +147,16 @@ function TestGoal() {
       if (res.success || Array.isArray(res)) {
         // Depending on backend API response wrapping
         const data = Array.isArray(res) ? res : res.data;
-        setAiRecipes(data || []);
+        const finalData = data || [];
+        setAiRecipes(finalData);
         setStatusMsg("Đã tạo gợi ý thực đơn từ Home Chef AI thành công!");
+
+        // Update cache with new AI recommendations
+        const currentCache = getCachedData() || {};
+        sessionStorage.setItem("homechef_test_goal_cache", JSON.stringify({
+          ...currentCache,
+          aiRecipes: finalData
+        }));
       }
     } catch (error) {
       console.error("AI Generation error:", error);
