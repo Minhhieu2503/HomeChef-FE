@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Calendar, Search, Package, User } from "lucide-react";
+import { Home, Calendar, Search, Package, User, Target } from "lucide-react";
 import "./MobileNav.css";
 
 const MobileNav = () => {
@@ -19,6 +19,9 @@ const MobileNav = () => {
       </Link>
       <Link to="/pantry" className={`mobile-nav-item ${path === "/pantry" ? "active" : ""}`}>
         <Package size={22} />
+      </Link>
+      <Link to="/test-goal" className={`mobile-nav-item ${path === "/test-goal" ? "active" : ""}`}>
+        <Target size={22} />
       </Link>
       <Link to="/profile" className={`mobile-nav-item ${path === "/profile" ? "active" : ""}`}>
         <User size={22} />
