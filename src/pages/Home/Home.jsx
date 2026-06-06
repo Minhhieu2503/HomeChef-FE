@@ -180,7 +180,12 @@ function Dashboard() {
         <header className="dashboard-header">
           <div className="header-left">
             <h1>Xin chào, {user?.name || "Đầu bếp"}!</h1>
-            <p>Hôm nay bạn muốn nấu món gì?</p>
+            <p style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              Hôm nay bạn muốn nấu món gì?
+              <span className="user-health-goal-badge" style={{ fontSize: '0.75rem', padding: '2px 8px', borderRadius: '12px', background: '#e0f2fe', color: '#0369a1', fontWeight: 600 }}>
+                Mục tiêu: {user?.healthGoal === "lose_weight" ? "Giảm cân 📉" : user?.healthGoal === "gain_weight" ? "Tăng cân 📈" : "Cân bằng 🥗"}
+              </span>
+            </p>
           </div>
 
           <div className="header-right">
@@ -218,7 +223,9 @@ function Dashboard() {
                 onClick={() => navigate('/profile')}
               />
               <div className="mobile-greeting-text">
-                <span className="welcome-sub">Chào mừng trở lại,</span>
+                <span className="welcome-sub">
+                  Mục tiêu: {user?.healthGoal === "lose_weight" ? "Giảm cân 📉" : user?.healthGoal === "gain_weight" ? "Tăng cân 📈" : "Cân bằng 🥗"}
+                </span>
                 <span className="user-name-pro">{user?.name?.split(' ')[0] || "Đầu bếp"}!</span>
               </div>
             </div>
@@ -259,6 +266,52 @@ function Dashboard() {
           <h2>Cảm Hứng Mỗi Ngày</h2>
           <p>Bắt đầu ngày mới với những công thức đầy năng lượng và dinh dưỡng.</p>
           <button className="btn-view-plan" onClick={() => navigate('/meal-planner')}>Xem kế hoạch hôm nay</button>
+        </div>
+      </section>
+
+      {/* Food Waste Quiz & Comic Banner */}
+      <section className="waste-marketing-banner animate-fadeIn" style={{
+        background: 'linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%)',
+        borderRadius: '16px',
+        padding: '20px 24px',
+        color: 'white',
+        margin: '20px 0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.2)',
+        overflow: 'hidden',
+        position: 'relative'
+      }}>
+        <div style={{ flex: 1, zIndex: 2 }}>
+          <span style={{ background: '#3b82f6', color: '#eff6ff', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Thử Thách Xanh</span>
+          <h3 style={{ fontSize: '20px', fontWeight: 'bold', margin: '10px 0 6px 0', color: 'white' }}>Bạn Đang Lãng Phí Bao Nhiêu Thực Phẩm?</h3>
+          <p style={{ fontSize: '13px', color: '#bfdbfe', margin: '0 0 16px 0', maxWidth: '500px', lineHeight: '1.5' }}>Tham gia Quiz trắc nghiệm nhanh để khám phá lượng tiền & khí thải nhà kính bạn lãng phí mỗi năm và xem truyện tranh ngắn cực ý nghĩa!</p>
+          <button 
+            onClick={() => navigate('/food-waste-quiz')}
+            style={{
+              background: '#ffffff',
+              color: '#1e3a8a',
+              border: 'none',
+              padding: '8px 20px',
+              borderRadius: '24px',
+              fontWeight: 'bold',
+              fontSize: '13px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+              transition: 'transform 0.2s'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.transform = 'scale(1.03)'}
+            onMouseOut={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            Chơi Quiz & Xem Truyện <ChevronRight size={16} />
+          </button>
+        </div>
+        <div style={{ fontSize: '70px', zIndex: 1, opacity: 0.15, position: 'absolute', right: '20px', bottom: '-10px', pointerEvents: 'none' }}>
+          🗑️🍏
         </div>
       </section>
 
@@ -316,11 +369,54 @@ function Dashboard() {
         {/* 5. Dashboard Sidebar */}
         <aside className="dashboard-sidebar">
           {/* Nutrition Widget */}
-          <div className="sidebar-widget">
+          <div className="sidebar-widget nutrition-widget-container" style={{ position: 'relative' }}>
             <div className="widget-title">
               <span>Dinh dưỡng</span>
               <span className="text-xs text-muted">Mục tiêu ngày</span>
             </div>
+            
+            {user?.plan === 'free' && (
+              <div className="premium-lock-overlay" style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: 'rgba(255, 255, 255, 0.92)',
+                backdropFilter: 'blur(3px)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                textAlign: 'center',
+                padding: '15px',
+                borderRadius: '16px',
+                zIndex: 10
+              }}>
+                <div style={{ background: '#FFF5F5', padding: '10px', borderRadius: '50%', marginBottom: '10px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+                  <Flame size={28} className="text-red-500" />
+                </div>
+                <h4 style={{ margin: '0 0 5px 0', fontSize: '14px', fontWeight: 'bold', color: '#1f2937' }}>Theo dõi Calo & Đạm</h4>
+                <p style={{ margin: '0 0 12px 0', fontSize: '11px', color: '#6b7280', lineHeight: '1.4' }}>Tính năng cao cấp giúp kiểm soát dinh dưỡng tự động từ thực đơn của bạn.</p>
+                <button 
+                  onClick={() => navigate('/pricing')}
+                  style={{
+                    background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 14px',
+                    borderRadius: '20px',
+                    fontSize: '11px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 10px rgba(255, 107, 107, 0.3)'
+                  }}
+                >
+                  Nâng cấp Premium
+                </button>
+              </div>
+            )}
+
             <div className="nutrition-stats">
               <div className="stat-item">
                 <div className="stat-info">

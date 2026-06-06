@@ -31,7 +31,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       authUtils.removeToken();
       // Use hash for mobile routing compatibility
-      window.location.hash = "#/login"; 
+      window.location.hash = "#/login";
     }
 
     return Promise.reject(error);

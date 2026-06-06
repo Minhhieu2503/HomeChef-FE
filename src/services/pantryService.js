@@ -20,9 +20,10 @@ export const deletePantryItem = async (id) => {
   await api.delete(`/pantry/${id}`);
 };
 
-export const scanIngredientImage = async (imageFile) => {
+export const scanIngredientImage = async (imageFile, type = "fridge") => {
   const formData = new FormData();
   formData.append("image", imageFile);
+  formData.append("type", type);
   
   // Explicitly set multipart/form-data content-type to override instance defaults
   const response = await api.post("/vision/scan", formData, {

@@ -15,3 +15,8 @@ export const scheduleMeal = async (date, slot, recipeId) => {
 export const unscheduleMeal = async (id) => {
   await api.delete(`/mealplan/${id}`);
 };
+
+export const generateAIMealPlan = async (data) => {
+  const response = await api.post("/mealplan/generate-ai", data);
+  return response.data;
+};

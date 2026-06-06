@@ -9,6 +9,7 @@ const navItems = [
   { path: "/meal-planner", label: "Kế hoạch", icon: "📅" },
   { path: "/recipes", label: "Công thức", icon: "🍳" },
   { path: "/pantry", label: "Tủ lạnh", icon: "🥬" },
+  { path: "/test-goal", label: "Kiểm thử", icon: "🎯" },
 ];
 
 function Sidebar() {

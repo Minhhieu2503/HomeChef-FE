@@ -23,13 +23,15 @@ export const getAllRecipes = async (params = {}) => {
   return response.data;
 };
 
-export const getRecommendedRecipes = async () => {
-  if (cache.recommendedRecipes) {
+export const getRecommendedRecipes = async (bypassCache = false) => {
+  if (cache.recommendedRecipes && !bypassCache) {
     return cache.recommendedRecipes;
   }
   
   const response = await api.get("/recipes/recommended");
-  cache.recommendedRecipes = response.data;
+  if (!bypassCache) {
+    cache.recommendedRecipes = response.data;
+  }
   
   return response.data;
 };

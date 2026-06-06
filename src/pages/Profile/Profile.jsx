@@ -159,23 +159,45 @@ function Profile() {
       {/* 2. Content Grid */}
       <div className="profile-grid">
         <div className="main-content-flow">
-          {/* Nutrition Goals Widget */}
+          {/* Nutrition & Health Goals Widget */}
           <section className="nutrition-goals-widget">
-            <div className="calorie-summary-card">
-              <div className="info">
-                <h4>Mục tiêu calo hằng ngày</h4>
-                <div className="value">{user?.calorieGoal || 2000} kcal</div>
+            <div className="profile-goals-row" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+              <div className="calorie-summary-card" style={{ marginBottom: 0 }}>
+                <div className="info">
+                  <h4>Mục tiêu calo hằng ngày</h4>
+                  <div className="value">{user?.calorieGoal || 2000} kcal</div>
+                </div>
+                <button 
+                  className="btn-edit-profile bg-white/20 text-white hover:bg-white/30" 
+                  onClick={() => {
+                    setEditType("calories");
+                    setEditValue(user?.calorieGoal || 2000);
+                    setIsEditModalOpen(true);
+                  }}
+                >
+                  Cập nhật
+                </button>
               </div>
-              <button 
-                className="btn-edit-profile bg-white/20 text-white hover:bg-white/30" 
-                onClick={() => {
-                  setEditType("calories");
-                  setEditValue(user?.calorieGoal || 2000);
-                  setIsEditModalOpen(true);
-                }}
-              >
-                Cập nhật
-              </button>
+
+              <div className="calorie-summary-card" style={{ marginBottom: 0, background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)' }}>
+                <div className="info">
+                  <h4>Mục tiêu sức khỏe</h4>
+                  <div className="value">
+                    {user?.healthGoal === "lose_weight" ? "Giảm cân 📉" : 
+                     user?.healthGoal === "gain_weight" ? "Tăng cân 📈" : "Cân bằng 🥗"}
+                  </div>
+                </div>
+                <button 
+                  className="btn-edit-profile bg-white/20 text-white hover:bg-white/30" 
+                  onClick={() => {
+                    setEditType("healthGoal");
+                    setEditValue(user?.healthGoal || "balanced");
+                    setIsEditModalOpen(true);
+                  }}
+                >
+                  Thay đổi
+                </button>
+              </div>
             </div>
 
             <div className="macro-grid">
@@ -315,6 +337,7 @@ function Profile() {
               <h3>
                 {editType === "profile" ? "Chỉnh sửa hồ sơ" : 
                  editType === "calories" ? "Cập nhật mục tiêu calo" : 
+                 editType === "healthGoal" ? "Mục tiêu sức khỏe" :
                  editType === "preferences" ? "Thêm sở thích ăn uống" : "Thêm dị ứng"}
               </h3>
               <button className="close-btn" onClick={() => setIsEditModalOpen(false)}><X size={20} /></button>
@@ -342,6 +365,48 @@ function Profile() {
                   />
                 </div>
               )}
+              {editType === "healthGoal" && (
+                <div className="form-group">
+                  <label>Mục tiêu sức khỏe & cân nặng</label>
+                  <div className="goal-options-list" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginTop: '0.5rem' }}>
+                    {[
+                      { value: "balanced", label: "Cân bằng dinh dưỡng 🥗", desc: "Duy trì cân nặng ổn định và tối ưu sức khỏe tổng quát." },
+                      { value: "lose_weight", label: "Giảm cân (Thâm hụt calo) 📉", desc: "Đề xuất thực phẩm ít calo và chất béo giúp giảm cân lành mạnh." },
+                      { value: "gain_weight", label: "Tăng cân (Thặng dư calo) 📈", desc: "Đề xuất các món ăn giàu dinh dưỡng và lượng protein dồi dào." }
+                    ].map(goal => (
+                      <label 
+                        key={goal.value} 
+                        className={`goal-option-item ${editValue === goal.value ? 'active' : ''}`}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          padding: '1rem',
+                          border: `2px solid ${editValue === goal.value ? 'var(--color-primary, #10b981)' : '#e2e8f0'}`,
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          backgroundColor: editValue === goal.value ? '#f0fdf4' : 'white',
+                          transition: 'all 0.2s ease',
+                          textAlign: 'left'
+                        }}
+                        onClick={() => setEditValue(goal.value)}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '0.95rem' }}>
+                          <input 
+                            type="radio" 
+                            name="healthGoal" 
+                            value={goal.value} 
+                            checked={editValue === goal.value} 
+                            onChange={() => setEditValue(goal.value)}
+                            style={{ accentColor: 'var(--color-primary, #10b981)' }}
+                          />
+                          {goal.label}
+                        </div>
+                        <span style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.25rem', paddingLeft: '1.5rem' }}>{goal.desc}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
               {(editType === "preferences" || editType === "allergies") && (
                 <div className="form-group">
                   <label>{editType === "preferences" ? "Tên sở thích" : "Tên dị ứng"}</label>
@@ -360,6 +425,7 @@ function Profile() {
                 onClick={() => {
                   if (editType === "profile") handleUpdateUser({ name: editValue });
                   if (editType === "calories") handleUpdateUser({ calorieGoal: Number(editValue) });
+                  if (editType === "healthGoal") handleUpdateUser({ healthGoal: editValue });
                   if (editType === "preferences" || editType === "allergies") handleAddCustomTag(editType);
                 }}
               >

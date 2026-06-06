@@ -30,6 +30,7 @@ function Pantry() {
   const [expandedRecipe, setExpandedRecipe] = useState(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
+  const [scanType, setScanType] = useState("fridge");
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
 
@@ -50,9 +51,13 @@ function Pantry() {
 
   const handleAnalyze = async () => {
     if (!scanImage) return;
+    if (scanType === "bill" && user?.plan === "free") {
+      setIsUpgradeModalOpen(true);
+      return;
+    }
     setIsScanning(true);
     try {
-      const result = await scanIngredientImage(scanImage);
+      const result = await scanIngredientImage(scanImage, scanType);
       // result is { success: true, message: "...", data: [savedItems], type: "..." }
 
       toast.success(result.message || "Đã quét và thêm vào tủ lạnh thành công!");
@@ -64,7 +69,7 @@ function Pantry() {
       console.error("Scan error:", err);
       if (err.response?.status === 403) {
         setIsUpgradeModalOpen(true);
-        toast.error("Bạn đã hết lượt dùng thử tính năng cao cấp!");
+        toast.error(err.response?.data?.message || "Bạn đã hết lượt dùng thử tính năng cao cấp!");
       } else {
         toast.error(err.response?.data?.message || "Không thể phân tích ảnh. Vui lòng thử lại!");
       }
@@ -110,6 +115,7 @@ function Pantry() {
     setSelectedIngredients({});
     setExpandedRecipe(null);
     setIsScanning(false);
+    setScanType("fridge");
   };
 
   const fetchData = async () => {
@@ -582,13 +588,42 @@ function Pantry() {
               {/* Step 1: Image Selection */}
               {!scanResult && (
                 <div className="scan-upload-area">
+                  <div className="scan-type-selector" style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
+                    <button 
+                      type="button"
+                      className={`scan-type-tab ${scanType === 'fridge' ? 'active' : ''}`}
+                      onClick={() => setScanType('fridge')}
+                      style={{ padding: '8px 16px', borderRadius: '20px', border: scanType === 'fridge' ? '2px solid #4ADE80' : '1px solid #e2e8f0', background: scanType === 'fridge' ? '#e8f5e9' : 'white', color: scanType === 'fridge' ? '#1b5e20' : '#475569', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s' }}
+                    >
+                      🥬 Quét tủ lạnh
+                    </button>
+                    <button 
+                      type="button"
+                      className={`scan-type-tab ${scanType === 'bill' ? 'active' : ''}`}
+                      onClick={() => {
+                        if (user?.plan === 'free') {
+                          setIsUpgradeModalOpen(true);
+                        } else {
+                          setScanType('bill');
+                        }
+                      }}
+                      style={{ padding: '8px 16px', borderRadius: '20px', border: scanType === 'bill' ? '2px solid #4ADE80' : '1px solid #e2e8f0', background: scanType === 'bill' ? '#e8f5e9' : 'white', color: scanType === 'bill' ? '#1b5e20' : '#475569', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      🧾 Quét hóa đơn {user?.plan === 'free' && '🔒'}
+                    </button>
+                  </div>
+
                   {!scanPreview ? (
                     <div className="upload-zone">
                       <div className="upload-icon-wrapper">
                         <Camera size={40} />
                       </div>
-                      <p className="upload-title">Chụp ảnh nguyên liệu trong tủ lạnh</p>
-                      <p className="upload-desc">AI sẽ nhận diện và gợi ý món ăn cho bạn</p>
+                      <p className="upload-title">
+                        {scanType === 'fridge' ? 'Chụp ảnh nguyên liệu trong tủ lạnh' : 'Chụp ảnh hóa đơn đi chợ'}
+                      </p>
+                      <p className="upload-desc">
+                        {scanType === 'fridge' ? 'AI sẽ nhận diện và gợi ý món ăn cho bạn' : 'AI sẽ đọc hóa đơn và tự động lưu vào tủ lạnh'}
+                      </p>
                       <div className="upload-buttons">
                         <button className="upload-btn camera" onClick={() => cameraInputRef.current?.click()}>
                           <Camera size={18} /> Camera

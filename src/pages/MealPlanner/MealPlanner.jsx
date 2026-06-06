@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { getAllRecipes } from "../../services/recipeService";
 import { authService } from "../../services/auth.service";
-import { getMealPlan, scheduleMeal, unscheduleMeal } from "../../services/mealPlanService";
+import { getMealPlan, scheduleMeal, unscheduleMeal, generateAIMealPlan } from "../../services/mealPlanService";
 import { useToast } from "../../context/ToastContext";
-import { Plus, Trash2, Search, Bell, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, Search, Bell, AlertTriangle, Sparkles, Loader, Check, X, ChevronRight, CheckCircle2 } from "lucide-react";
 import "./MealPlanner.css";
 
 const daysOfWeekEn = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
@@ -31,6 +31,10 @@ function MealPlanner() {
   const [loading, setLoading] = useState(true);
   const [selectionModal, setSelectionModal] = useState({ show: false, day: null, slot: null, activeTab: 'saved' });
   const [dragOverTarget, setDragOverTarget] = useState(null); // { day, slot }
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [aiForm, setAiForm] = useState({ peopleCount: 2, daysCount: 3, dietMode: "balanced", prioritizePantry: true });
 
   const dates = useMemo(() => {
     const today = new Date();
@@ -52,53 +56,76 @@ function MealPlanner() {
     });
   }, []);
 
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const startIso = dates[0].iso;
+      const endIso = dates[dates.length - 1].iso;
+
+      const [me, recipesRes, savedRes, dbPlan] = await Promise.all([
+        authService.getMe(),
+        getAllRecipes(),
+        authService.getSavedRecipes(),
+        getMealPlan(startIso, endIso)
+      ]);
+
+      setUser(me.data);
+
+      const recipesArr = Array.isArray(recipesRes) ? recipesRes : (recipesRes?.recipes || []);
+      setAllRecipes(recipesArr);
+
+      setSavedRecipes(savedRes.data || []);
+
+      const normalized = {};
+      const planData = dbPlan?.data || (Array.isArray(dbPlan) ? dbPlan : []);
+      
+      planData.forEach(node => {
+        if (!node || !node.date || !node.recipe) return;
+        const dayObj = dates.find(d => d.iso === node.date);
+        if (dayObj) {
+          const slotKey = slotMap[node.slot.toLowerCase()] || node.slot;
+          normalized[`${dayObj.dayEn}-${slotKey}`] = {
+            dbId: node._id,
+            recipeId: node.recipe._id,
+            title: node.recipe.title,
+            cal: node.recipe.calories || 0,
+            img: node.recipe.image
+          };
+        }
+      });
+      setPlannedMeals(normalized);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const startIso = dates[0].iso;
-        const endIso = dates[dates.length - 1].iso;
-
-        const [me, recipesRes, savedRes, dbPlan] = await Promise.all([
-          authService.getMe(),
-          getAllRecipes(),
-          authService.getSavedRecipes(),
-          getMealPlan(startIso, endIso)
-        ]);
-
-        setUser(me.data);
-
-        const recipesArr = Array.isArray(recipesRes) ? recipesRes : (recipesRes?.recipes || []);
-        setAllRecipes(recipesArr);
-
-        setSavedRecipes(savedRes.data || []);
-
-        const normalized = {};
-        const planData = dbPlan?.data || (Array.isArray(dbPlan) ? dbPlan : []);
-        
-        planData.forEach(node => {
-          if (!node || !node.date || !node.recipe) return;
-          const dayObj = dates.find(d => d.iso === node.date);
-          if (dayObj) {
-            const slotKey = slotMap[node.slot.toLowerCase()] || node.slot;
-            normalized[`${dayObj.dayEn}-${slotKey}`] = {
-              dbId: node._id,
-              recipeId: node.recipe._id,
-              title: node.recipe.title,
-              cal: node.recipe.calories || 0,
-              img: node.recipe.image
-            };
-          }
-        });
-        setPlannedMeals(normalized);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchData();
   }, []);
+
+  const handleRunAI = async (e) => {
+    e.preventDefault();
+    setIsGenerating(true);
+    try {
+      await generateAIMealPlan({
+        peopleCount: aiForm.peopleCount,
+        daysCount: aiForm.daysCount,
+        dietMode: aiForm.dietMode,
+        prioritizePantry: aiForm.prioritizePantry
+      });
+
+      toast.success("Đã tạo thành công kế hoạch ăn uống bằng AI! 🎉");
+      setIsAIModalOpen(false);
+      await fetchData();
+    } catch (err) {
+      console.error("AI Planner Error:", err);
+      toast.error(err.response?.data?.message || "Không thể khởi tạo kế hoạch ăn uống bằng AI. Vui lòng nâng cấp Premium hoặc thử lại!");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const handleRemoveMeal = async (compositeKey) => {
     const node = plannedMeals[compositeKey];
@@ -266,7 +293,30 @@ function MealPlanner() {
       {/* 1. Header (Mobile vs Web) */}
       {!Capacitor.isNativePlatform() ? (
         <header className="planner-header">
-          <h1 className="header-title">Lịch trình hàng tuần</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <h1 className="header-title">Lịch trình hàng tuần</h1>
+            <button 
+              className="btn-ai-planner" 
+              onClick={() => setIsAIModalOpen(true)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                color: 'white',
+                border: 'none',
+                padding: '8px 16px',
+                borderRadius: '20px',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 10px rgba(16, 185, 129, 0.3)',
+                transition: 'all 0.2s'
+              }}
+            >
+              <Sparkles size={15} /> Lên Kế Hoạch AI
+            </button>
+          </div>
           <div className="header-actions">
             <button className="notif-btn"><Bell size={20} /></button>
             <div className="user-profile" onClick={() => navigate('/profile')}>
@@ -276,13 +326,35 @@ function MealPlanner() {
         </header>
       ) : (
         <header className="mobile-planner-header">
-          <div className="planner-title-row">
-            <h2>Meal Planner</h2>
-            <div className="planner-summary">
-              <span className={weeklyStats.totalCals > 15000 ? 'warn' : ''}>
-                {weeklyStats.totalCals.toLocaleString()} kcal this week
-              </span>
+          <div className="planner-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <div>
+              <h2>Meal Planner</h2>
+              <div className="planner-summary">
+                <span className={weeklyStats.totalCals > 15000 ? 'warn' : ''}>
+                  {weeklyStats.totalCals.toLocaleString()} kcal this week
+                </span>
+              </div>
             </div>
+            <button 
+              className="btn-mobile-ai-planner" 
+              onClick={() => setIsAIModalOpen(true)}
+              style={{
+                background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                color: 'white',
+                border: 'none',
+                padding: '6px 12px',
+                borderRadius: '16px',
+                fontWeight: 'bold',
+                fontSize: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: '0 4px 8px rgba(16, 185, 129, 0.2)'
+              }}
+            >
+              <Sparkles size={12} /> AI Plan
+            </button>
           </div>
           
           {/* Horizontal Date Picker */}
@@ -484,6 +556,159 @@ function MealPlanner() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Meal Planner Modal */}
+      {isAIModalOpen && (
+        <div className="planner-modal-overlay animate-fadeIn" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '16px' }}>
+          <div className="planner-modal-card animate-popIn" style={{ background: 'white', borderRadius: '20px', padding: '28px', maxWidth: '480px', width: '100%', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }} onClick={e => e.stopPropagation()}>
+            {isGenerating ? (
+              <div style={{ textAlign: 'center', padding: '30px 10px' }}>
+                <Loader className="animate-spin text-green-500" size={48} style={{ margin: '0 auto 20px auto' }} />
+                <h3 style={{ fontSize: '18px', fontWeight: 'bold', color: '#1f2937', marginBottom: '8px' }}>Đang Tạo Kế Hoạch Ăn Uống AI</h3>
+                <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.5' }}>AI của HomeChef đang phân tích khẩu vị của bạn và nguyên liệu sẵn có trong tủ lạnh để thiết lập thực đơn tối ưu. Vui lòng đợi trong giây lát...</p>
+              </div>
+            ) : (
+              <form onSubmit={handleRunAI}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h3 style={{ fontSize: '18px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '8px', color: '#0f172a' }}>
+                    <Sparkles className="text-green-500" size={20} /> AI Meal Planner
+                  </h3>
+                  <button type="button" onClick={() => setIsAIModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                  {/* Eaters Count */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Có bao nhiêu người ăn?</label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      max="10" 
+                      value={aiForm.peopleCount}
+                      onChange={e => setAiForm(prev => ({ ...prev, peopleCount: parseInt(e.target.value) || 2 }))}
+                      style={{ padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none' }}
+                      required
+                    />
+                  </div>
+
+                  {/* Days Count */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Muốn lên kế hoạch trong mấy ngày? (Giới hạn tối đa 3 ngày)</label>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      {[1, 2, 3].map(d => (
+                        <button
+                          key={d}
+                          type="button"
+                          onClick={() => setAiForm(prev => ({ ...prev, daysCount: d }))}
+                          style={{
+                            flex: 1,
+                            padding: '10px',
+                            borderRadius: '10px',
+                            border: aiForm.daysCount === d ? '2px solid #10B981' : '1px solid #cbd5e1',
+                            background: aiForm.daysCount === d ? '#ecfdf5' : 'white',
+                            color: aiForm.daysCount === d ? '#047857' : '#475569',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            fontSize: '13px'
+                          }}
+                        >
+                          {d} ngày
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Diet Mode (Premium) */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    <label style={{ fontSize: '13px', fontWeight: '600', color: '#475569' }}>Chế độ dinh dưỡng đặc biệt</label>
+                    <select
+                      value={aiForm.dietMode}
+                      onChange={e => {
+                        const val = e.target.value;
+                        if (val !== 'balanced' && user?.plan === 'free') {
+                          setIsUpgradeModalOpen(true);
+                        } else {
+                          setAiForm(prev => ({ ...prev, dietMode: val }));
+                        }
+                      }}
+                      style={{ padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none', background: 'white' }}
+                    >
+                      <option value="balanced">Cân bằng tự nhiên (Mặc định)</option>
+                      <option value="gym">🏋️ Gym / Tăng cơ giảm mỡ {user?.plan === 'free' && '(Premium 🔒)'}</option>
+                      <option value="keto">🥩 Keto / Lowcarb {user?.plan === 'free' && '(Premium 🔒)'}</option>
+                      <option value="clean_eating">🥗 Ăn sạch / Healthy {user?.plan === 'free' && '(Premium 🔒)'}</option>
+                    </select>
+                  </div>
+
+                  {/* Prioritize Pantry */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '4px' }}>
+                    <input 
+                      type="checkbox" 
+                      id="prioritizePantry"
+                      checked={aiForm.prioritizePantry}
+                      onChange={e => setAiForm(prev => ({ ...prev, prioritizePantry: e.target.checked }))}
+                      style={{ width: '18px', height: '18px', accentColor: '#10B981', cursor: 'pointer' }}
+                    />
+                    <label htmlFor="prioritizePantry" style={{ fontSize: '13px', fontWeight: '600', color: '#475569', cursor: 'pointer' }}>
+                      Ưu tiên nguyên liệu có sẵn trong tủ lạnh 🥬
+                    </label>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => setIsAIModalOpen(false)} 
+                    style={{ flex: 1, padding: '12px', border: '1px solid #cbd5e1', borderRadius: '10px', background: 'white', color: '#475569', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button 
+                    type="submit" 
+                    style={{ flex: 1, padding: '12px', border: 'none', borderRadius: '10px', background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)', color: 'white', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px rgba(16, 185, 129, 0.2)' }}
+                  >
+                    Bắt đầu tạo
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Upgrade Modal for Premium features */}
+      {isUpgradeModalOpen && (
+        <div className="planner-modal-overlay animate-fadeIn" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100, padding: '16px' }}>
+          <div className="planner-modal-card animate-popIn" style={{ background: 'white', borderRadius: '20px', padding: '32px', maxWidth: '400px', width: '100%', textAlign: 'center', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ background: '#FFF5F5', padding: '16px', borderRadius: '50%', display: 'inline-flex', marginBottom: '20px' }}>
+              <Sparkles size={36} style={{ color: '#FF6B6B' }} />
+            </div>
+            <h3 style={{ fontSize: '20px', fontWeight: 'bold', color: '#1f2937', marginBottom: '10px' }}>Nâng Cấp Premium</h3>
+            <p style={{ fontSize: '13px', color: '#6b7280', lineHeight: '1.5', marginBottom: '24px' }}>Mở khóa toàn bộ các tính năng cao cấp như: Lên thực đơn theo chế độ đặc biệt (Gym/Keto), quét hóa đơn đi chợ và theo dõi dinh dưỡng hàng ngày.</p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button 
+                type="button" 
+                onClick={() => setIsUpgradeModalOpen(false)} 
+                style={{ flex: 1, padding: '12px', border: '1px solid #cbd5e1', borderRadius: '10px', background: 'white', color: '#475569', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer' }}
+              >
+                Đóng
+              </button>
+              <button 
+                type="button" 
+                onClick={() => {
+                  setIsUpgradeModalOpen(false);
+                  navigate('/pricing');
+                }} 
+                style={{ flex: 1, padding: '12px', border: 'none', borderRadius: '10px', background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)', color: 'white', fontWeight: 'bold', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 10px rgba(255, 107, 107, 0.3)' }}
+              >
+                Nâng cấp ngay
+              </button>
             </div>
           </div>
         </div>

@@ -19,6 +19,8 @@ import SmartCook from "./pages/SmartCook/SmartCook";
 import AdminLayout from "./pages/Admin/AdminLayout";
 import Pricing from "./pages/Pricing/Pricing";
 import PaymentResult from "./pages/Pricing/PaymentResult";
+import TestGoal from "./pages/TestGoal/TestGoal";
+import FoodWasteQuiz from "./pages/FoodWasteQuiz/FoodWasteQuiz";
 
 // Protected Route Component
 import { authUtils } from "./utils/authUtils";
@@ -123,6 +125,8 @@ function App() {
                     <Route path="/smart-cook" element={<SmartCook />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/payment-result" element={<PaymentResult />} />
+                    <Route path="/test-goal" element={<TestGoal />} />
+                    <Route path="/food-waste-quiz" element={<FoodWasteQuiz />} />
                   </Routes>
                 </main>
               </div>
