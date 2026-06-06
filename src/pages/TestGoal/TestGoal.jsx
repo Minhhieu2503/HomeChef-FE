@@ -34,6 +34,18 @@ function TestGoal() {
   const [activeVoiceStep, setActiveVoiceStep] = useState(null);
   const [showVoiceAssistant, setShowVoiceAssistant] = useState(false);
   const [showSubscriptionPitch, setShowSubscriptionPitch] = useState(false);
+  const [checkoutPartner, setCheckoutPartner] = useState(null);
+  const [checkoutStep, setCheckoutStep] = useState(0); // 0: closed, 1: syncing, 2: success
+
+  const handleAffiliateCheckout = (partner) => {
+    setCheckoutPartner(partner);
+    setCheckoutStep(1);
+    
+    // Simulate API checkout cart handoff after 2 seconds
+    setTimeout(() => {
+      setCheckoutStep(2);
+    }, 2000);
+  };
 
   useEffect(() => {
     setCompletedSteps({});
@@ -566,6 +578,45 @@ function TestGoal() {
                 </div>
               </div>
 
+              {/* Affiliate Commerce Integration: Order Missing Ingredients */}
+              {selectedRecipe.ingredients?.some(ing => {
+                const isMissing = 
+                  ing.quantity === "Cần mua thêm" || 
+                  (selectedRecipe.missingIngredients && selectedRecipe.missingIngredients.includes(ing.name)) ||
+                  (!selectedRecipe.missingIngredients && !pantryItems.some(p => p.name.toLowerCase().includes(ing.name.toLowerCase()) || ing.name.toLowerCase().includes(p.name.toLowerCase())));
+                return isMissing;
+              }) && (
+                <div className="affiliate-order-box">
+                  <div className="affiliate-header">
+                    <span className="affiliate-badge">💰 Đối tác liên kết</span>
+                    <h4>Thiếu nguyên liệu? Đặt giao siêu tốc!</h4>
+                  </div>
+                  <p className="affiliate-desc">
+                    Đồng bộ các nguyên liệu còn thiếu trực tiếp vào giỏ hàng đối tác để nấu ăn ngay lập tức.
+                  </p>
+                  <div className="affiliate-partner-buttons">
+                    <button 
+                      className="btn-affiliate-partner grab"
+                      onClick={() => handleAffiliateCheckout("GrabMart")}
+                    >
+                      <span className="partner-logo">🟢</span> GrabMart (30 phút)
+                    </button>
+                    <button 
+                      className="btn-affiliate-partner shopee"
+                      onClick={() => handleAffiliateCheckout("ShopeeFood")}
+                    >
+                      <span className="partner-logo">🍊</span> ShopeeFood (Giao nhanh)
+                    </button>
+                    <button 
+                      className="btn-affiliate-partner bhx"
+                      onClick={() => handleAffiliateCheckout("Bách Hóa Xanh")}
+                    >
+                      <span className="partner-logo">🥬</span> Bách Hóa (Giá tốt)
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Steps list */}
               {selectedRecipe.steps && selectedRecipe.steps.length > 0 && (
                 <div>
@@ -709,6 +760,60 @@ function TestGoal() {
                 Trải nghiệm sau
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* AFFILIATE CHECKOUT SIMULATION MODAL */}
+      {checkoutStep > 0 && selectedRecipe && (
+        <div className="checkout-modal-backdrop" onClick={() => setCheckoutStep(0)}>
+          <div className="checkout-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="btn-close-voice" style={{ position: "absolute", top: "15px", right: "15px", fontSize: "1.2rem" }} onClick={() => setCheckoutStep(0)}>×</button>
+            {checkoutStep === 1 ? (
+              <div className="checkout-loading-state">
+                <div className="spinner partner-spinner"></div>
+                <h3>Đang đồng bộ với {checkoutPartner}...</h3>
+                <p>Đang tự động đóng gói nguyên liệu thiếu vào giỏ hàng đối tác...</p>
+                <div className="syncing-list">
+                  {selectedRecipe.ingredients
+                    ?.filter(ing => 
+                      ing.quantity === "Cần mua thêm" || 
+                      (selectedRecipe.missingIngredients && selectedRecipe.missingIngredients.includes(ing.name)) ||
+                      (!selectedRecipe.missingIngredients && !pantryItems.some(p => p.name.toLowerCase().includes(ing.name.toLowerCase()) || ing.name.toLowerCase().includes(p.name.toLowerCase())))
+                    )
+                    .map((ing, idx) => (
+                      <div key={idx} className="sync-item-row">
+                        🛒 {ing.name} (Định lượng chuẩn)
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            ) : (
+              <div className="checkout-success-state" style={{ padding: "1rem 0" }}>
+                <div className="success-check-icon" style={{ width: "60px", height: "60px", borderRadius: "50%", background: "#22c55e", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "2rem", margin: "0 auto 1.25rem auto" }}>✓</div>
+                <h3>Liên Kết Giỏ Hàng Thành Công!</h3>
+                <p style={{ color: "#475569", fontSize: "0.95rem", margin: "0.5rem 0 1.5rem 0" }}>
+                  Đã chuyển thành công các nguyên liệu còn thiếu vào giỏ hàng <strong>{checkoutPartner}</strong> của bạn.
+                </p>
+                <div className="success-details-card" style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "12px", textAlign: "left", marginBottom: "1.5rem", fontSize: "0.85rem" }}>
+                  <p style={{ margin: "4px 0" }}><strong>📍 Cửa hàng đề xuất:</strong> Siêu thị WinMart+ gần nhất</p>
+                  <p style={{ margin: "4px 0" }}><strong>🏷️ Ưu đãi áp dụng:</strong> Giảm giá 10% cho đơn hàng đầu tiên!</p>
+                  <p style={{ margin: "4px 0", color: "#10b981" }}><strong>📈 Hoa hồng tích lũy (Affiliate):</strong> 3.5% (Doanh thu tiếp thị)</p>
+                </div>
+                <div className="checkout-actions" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <button className="btn-pitch-upgrade" onClick={() => {
+                    setCheckoutStep(0);
+                    setSelectedRecipe(null);
+                  }}>
+                    🛍️ Tiếp tục thanh toán trên {checkoutPartner}
+                  </button>
+                  <button className="btn-pitch-cancel" onClick={() => setCheckoutStep(0)}>
+                    Quay lại ứng dụng
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
