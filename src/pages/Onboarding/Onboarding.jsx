@@ -12,7 +12,7 @@ const slides = [
   {
     title: "Lên kế hoạch ăn uống dễ dàng",
     desc: "Sắp xếp thực đơn hàng tuần thông minh, giúp bạn kiểm soát lượng calo và dinh dưỡng.",
-    img: "https://images.unsplash.com/photo-1498837167169-46e4d49bf078?q=80&w=1000&auto=format&fit=crop"
+    img: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?q=80&w=1000&auto=format&fit=crop"
   },
   {
     title: "Quản lý nguyên liệu thông minh",

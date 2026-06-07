@@ -118,9 +118,11 @@ function Pantry() {
     setScanType("fridge");
   };
 
-  const fetchData = async () => {
+  const fetchData = async (showLoadingSpinner = true) => {
     try {
-      setLoading(true);
+      if (showLoadingSpinner) {
+        setLoading(true);
+      }
 
       // Fetch both simultaneously
       const [pantryRes, recipesRes] = await Promise.all([
@@ -266,7 +268,7 @@ function Pantry() {
       }
 
       closeModal();
-      fetchData();
+      await fetchData(false);
     } catch (err) {
       toast.error(err.response?.data?.message || "Lỗi khi xử lý dữ liệu.");
     }
@@ -292,14 +294,23 @@ function Pantry() {
 
   const confirmDelete = async () => {
     if (!itemToDelete) return;
+    const itemToDeleteId = itemToDelete._id;
+    const itemToDeleteName = itemToDelete.name;
+    const previousIngredients = [...ingredients];
+
+    // Optimistic update
+    setIngredients(prev => prev.filter(item => item._id !== itemToDeleteId));
+    setIsConfirmModalOpen(false);
+    setItemToDelete(null);
+
     try {
-      await deletePantryItem(itemToDelete._id);
-      toast.success(`Đã xóa ${itemToDelete.name}.`);
-      setIsConfirmModalOpen(false);
-      setItemToDelete(null);
-      fetchData();
+      await deletePantryItem(itemToDeleteId);
+      toast.success(`Đã xóa ${itemToDeleteName}.`);
+      await fetchData(false);
     } catch (err) {
+      console.error("Delete error:", err);
       toast.error("Lỗi khi xóa nguyên liệu.");
+      setIngredients(previousIngredients);
     }
   };
 

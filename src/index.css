@@ -424,3 +424,17 @@ img { max-width: 100%; display: block; }
     border-bottom-right-radius: 30px;
   }
 }
+
+/* Spinner Animation */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
