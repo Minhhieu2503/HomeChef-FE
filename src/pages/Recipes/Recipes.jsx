@@ -18,6 +18,7 @@ function Recipes() {
   const [prepTime, setPrepTime] = useState(120);
   const [selectedDiets, setSelectedDiets] = useState([]);
   const [selectedDifficulty, setSelectedDifficulty] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,7 +63,7 @@ function Recipes() {
 
   useEffect(() => {
     applyFilters();
-  }, [selectedDiets, selectedDifficulty, prepTime, searchQuery]);
+  }, [selectedDiets, selectedDifficulty, prepTime, searchQuery, selectedCategory]);
 
   const handleSearchChange = (value) => {
     setSearchQuery(value);
@@ -115,6 +116,11 @@ function Recipes() {
       });
     }
 
+    // 5. Category
+    if (selectedCategory !== "all") {
+      result = result.filter(r => r.category === selectedCategory);
+    }
+
     setFilteredRecipes(result);
   };
 
@@ -151,16 +157,16 @@ function Recipes() {
   };
 
   const categories = [
-    { title: "Bữa sáng", type: "breakfast" },
-    { title: "Món chính", type: "main" },
-    { title: "Món khai vị", type: "appetizer" },
-    { title: "Món tráng miệng", type: "dessert" },
-    { title: "Đồ uống", type: "drink" },
-    { title: "Món chay", type: "vegetarian" },
-    { title: "Healthy", type: "healthy" },
-    { title: "Súp & Canh", type: "soup" },
-    { title: "Salad", type: "salad" },
-    { title: "Ăn vặt", type: "snack" }
+    { title: "Bữa sáng", type: "breakfast", emoji: "🍳" },
+    { title: "Món chính", type: "main", emoji: "🥩" },
+    { title: "Món khai vị", type: "appetizer", emoji: "🥗" },
+    { title: "Món tráng miệng", type: "dessert", emoji: "🍰" },
+    { title: "Đồ uống", type: "drink", emoji: "🍹" },
+    { title: "Món chay", type: "vegetarian", emoji: "🌱" },
+    { title: "Healthy", type: "healthy", emoji: "🥑" },
+    { title: "Súp & Canh", type: "soup", emoji: "🍲" },
+    { title: "Salad", type: "salad", emoji: "🥬" },
+    { title: "Ăn vặt", type: "snack", emoji: "🍿" }
   ];
 
   const recipeOfDay = recipes[0] || null;
@@ -197,7 +203,7 @@ function Recipes() {
         </div>
 
         {/* Recipe of the Day Banner */}
-        {recipeOfDay && (
+        {recipeOfDay && selectedCategory === "all" && (
           <section className="recipe-of-day-banner">
             <img src={recipeOfDay.image || "https://i-giadinh.vnecdn.net/2023/04/16/Buoc-11-Thanh-pham-11-7068-1681636164.jpg"} alt={recipeOfDay.title} />
             <div className="banner-content">
@@ -226,9 +232,28 @@ function Recipes() {
 
         {/* All Recipes Grid */}
         <section className="category-section all-recipes-section">
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-4">
             <h3 className="text-2xl font-bold" translate="no">Tất cả công thức</h3>
             <span className="text-muted text-sm">{filteredRecipes.length} món ăn</span>
+          </div>
+
+          {/* Category Tabs Row */}
+          <div className="category-tabs-row">
+            <button 
+              className={`category-tab ${selectedCategory === "all" ? "active" : ""}`}
+              onClick={() => setSelectedCategory("all")}
+            >
+              🍽 Tất cả
+            </button>
+            {categories.map(cat => (
+              <button 
+                key={cat.type}
+                className={`category-tab ${selectedCategory === cat.type ? "active" : ""}`}
+                onClick={() => setSelectedCategory(cat.type)}
+              >
+                <span>{cat.emoji}</span> <span>{cat.title}</span>
+              </button>
+            ))}
           </div>
           <div className="recipes-grid-discovery">
             {filteredRecipes.map(recipe => (
@@ -259,8 +284,8 @@ function Recipes() {
 
         <div className="section-divider"></div>
 
-        {/* Category Carousels */}
-        {categories.map(cat => {
+        {/* Category Carousels (Only show when 'all' is selected to avoid redundancy) */}
+        {selectedCategory === "all" && categories.map(cat => {
           const categoryRecipes = filteredRecipes.filter(r => r.category === cat.type);
           if (categoryRecipes.length === 0) return null;
 
@@ -310,6 +335,7 @@ function Recipes() {
               setPrepTime(120);
               setSelectedDiets([]);
               setSelectedDifficulty([]);
+              setSelectedCategory("all");
               setFilteredRecipes(recipes);
             }}>Xóa tất cả bộ lọc</button>
           </div>
