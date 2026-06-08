@@ -3,10 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { authService } from "../../services/auth.service";
 import { getRecommendedRecipes, generateAIRecommendations } from "../../services/recipeService";
 import { getPantryItems } from "../../services/pantryService";
+import { useToast } from "../../context/ToastContext";
 import "./TestGoal.css";
 
 function TestGoal() {
   const navigate = useNavigate();
+  const toast = useToast();
   // Try to load cached data for instant page rendering
   const getCachedData = () => {
     try {
@@ -90,24 +92,35 @@ function TestGoal() {
       }
 
       // Save to cache for instant subsequent loads
-      sessionStorage.setItem("homechef_test_goal_cache", JSON.stringify({
-        user: nextUser,
-        goal: nextGoal,
-        recipes: nextRecipes,
-        pantryItems: nextPantryItems,
-        aiRecipes: cached?.aiRecipes || []
-      }));
+      try {
+        sessionStorage.setItem("homechef_test_goal_cache", JSON.stringify({
+          user: nextUser,
+          goal: nextGoal,
+          recipes: nextRecipes,
+          pantryItems: nextPantryItems,
+          aiRecipes: cached?.aiRecipes || []
+        }));
+      } catch (cacheErr) {
+        console.error("Failed to write to sessionStorage:", cacheErr);
+      }
 
     } catch (error) {
       console.error("Error loading test data:", error);
-      setStatusMsg("Lỗi khi tải dữ liệu. Vui lòng kiểm tra kết nối local server.");
+      const errorMsg = "Lỗi khi tải dữ liệu. Vui lòng kiểm tra kết nối local server.";
+      setStatusMsg(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    const cachedData = sessionStorage.getItem("homechef_test_goal_cache");
+    let cachedData = null;
+    try {
+      cachedData = sessionStorage.getItem("homechef_test_goal_cache");
+    } catch (e) {
+      console.error("Cache read error:", e);
+    }
     loadData(!cachedData); // Silent refresh if cache is present, spinner if not
   }, []);
 
@@ -129,19 +142,27 @@ function TestGoal() {
         setRecipes(recData || []);
 
         // Update cache
-        sessionStorage.setItem("homechef_test_goal_cache", JSON.stringify({
-          user: nextUser,
-          goal: nextGoal,
-          recipes: recData || [],
-          pantryItems: pantryItems,
-          aiRecipes: cached?.aiRecipes || []
-        }));
+        try {
+          sessionStorage.setItem("homechef_test_goal_cache", JSON.stringify({
+            user: nextUser,
+            goal: nextGoal,
+            recipes: recData || [],
+            pantryItems: pantryItems,
+            aiRecipes: cached?.aiRecipes || []
+          }));
+        } catch (cacheErr) {
+          console.error("Failed to write to sessionStorage:", cacheErr);
+        }
 
-        setStatusMsg(`Đã cập nhật thực đơn phù hợp cho: ${getGoalLabel(targetGoal)}!`);
+        const successMsg = `Đã cập nhật thực đơn phù hợp cho: ${getGoalLabel(targetGoal)}!`;
+        setStatusMsg(successMsg);
+        toast.success(successMsg);
       }
     } catch (error) {
       console.error("Error updating goal:", error);
-      setStatusMsg("Lỗi khi cập nhật mục tiêu sức khỏe.");
+      const errorMsg = "Lỗi khi cập nhật mục tiêu sức khỏe.";
+      setStatusMsg(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setUpdating(false);
     }
@@ -155,7 +176,9 @@ function TestGoal() {
       // Get ingredient names
       const ingredients = pantryItems.map(item => item.name);
       if (ingredients.length === 0) {
-        setStatusMsg("Tủ lạnh của bạn đang trống! Vui lòng thêm nguyên liệu ở trang Tủ Lạnh.");
+        const warningMsg = "Tủ lạnh của bạn đang trống! Vui lòng thêm nguyên liệu ở trang Tủ Lạnh.";
+        setStatusMsg(warningMsg);
+        toast.warning(warningMsg);
         setAiLoading(false);
         return;
       }
@@ -166,18 +189,27 @@ function TestGoal() {
         const data = Array.isArray(res) ? res : res.data;
         const finalData = data || [];
         setAiRecipes(finalData);
-        setStatusMsg("Đã tạo gợi ý thực đơn từ Home Chef AI thành công!");
+        
+        const successMsg = "Đã tạo gợi ý thực đơn từ Home Chef AI thành công!";
+        setStatusMsg(successMsg);
+        toast.success(successMsg);
 
         // Update cache with new AI recommendations
         const currentCache = getCachedData() || {};
-        sessionStorage.setItem("homechef_test_goal_cache", JSON.stringify({
-          ...currentCache,
-          aiRecipes: finalData
-        }));
+        try {
+          sessionStorage.setItem("homechef_test_goal_cache", JSON.stringify({
+            ...currentCache,
+            aiRecipes: finalData
+          }));
+        } catch (cacheErr) {
+          console.error("Failed to write to sessionStorage:", cacheErr);
+        }
       }
     } catch (error) {
       console.error("AI Generation error:", error);
-      setStatusMsg("Lỗi khi tạo công thức từ Home Chef AI.");
+      const errorMsg = "Lỗi khi tạo công thức từ Home Chef AI.";
+      setStatusMsg(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setAiLoading(false);
     }
