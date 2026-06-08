@@ -331,7 +331,7 @@ function TestGoal() {
                     <h3>{user?.name || "Người dùng Thử nghiệm"}</h3>
                     <p className="user-email">{user?.email}</p>
                     <p className="user-current-goal">
-                      Mục tiêu hiện tại: <strong>{getGoalLabel(goal)}</strong>
+                      <span>Mục tiêu hiện tại: </span><strong>{getGoalLabel(goal)}</strong>
                     </p>
                   </div>
                 </div>
@@ -375,10 +375,10 @@ function TestGoal() {
                 <span className="results-count">{recipes.length} món ăn phù hợp</span>
               </div>
               <p className="panel-instruction">
-                Thuật toán đã lọc nguyên liệu khớp và tự động sắp xếp theo tiêu chí:
-                {goal === "lose_weight" && <strong> Lượng Calo thấp lên trước.</strong>}
-                {goal === "gain_weight" && <strong> Lượng Calo và Protein cao lên trước.</strong>}
-                {goal === "balanced" && <strong> Lượng Calo ổn định trung bình (~500 kcal).</strong>}
+                <span>Thuật toán đã lọc nguyên liệu khớp và tự động sắp xếp theo tiêu chí:</span>
+                {goal === "lose_weight" && <span><strong> Lượng Calo thấp lên trước.</strong></span>}
+                {goal === "gain_weight" && <span><strong> Lượng Calo và Protein cao lên trước.</strong></span>}
+                {goal === "balanced" && <span><strong> Lượng Calo ổn định trung bình (~500 kcal).</strong></span>}
               </p>
 
               <div className="recipe-results-list">
@@ -422,10 +422,10 @@ function TestGoal() {
 
                           <div className="matching-explanation">
                             <p>
-                              👉 <strong>Chi tiết:</strong> Chứa nguyên liệu trong tủ lạnh.
-                              {goal === "lose_weight" && ` Phù hợp chế độ Giảm Cân vì năng lượng cung cấp thấp (${recipe.calories} kcal).`}
-                              {goal === "gain_weight" && ` Phù hợp chế độ Tăng Cân nhờ lượng protein cực tốt (${recipe.protein}g) và calo cao (${recipe.calories} kcal).`}
-                              {goal === "balanced" && ` Thích hợp dinh dưỡng Cân Bằng với mức calo lý tưởng (${recipe.calories} kcal).`}
+                              <span>👉 <strong>Chi tiết:</strong> Chứa nguyên liệu trong tủ lạnh.</span>
+                              {goal === "lose_weight" && <span> Phù hợp chế độ Giảm Cân vì năng lượng cung cấp thấp ({recipe.calories} kcal).</span>}
+                              {goal === "gain_weight" && <span> Phù hợp chế độ Tăng Cân nhờ lượng protein cực tốt ({recipe.protein}g) và calo cao ({recipe.calories} kcal).</span>}
+                              {goal === "balanced" && <span> Thích hợp dinh dưỡng Cân Bằng với mức calo lý tưởng ({recipe.calories} kcal).</span>}
                             </p>
                           </div>
                         </div>
