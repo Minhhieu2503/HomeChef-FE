@@ -27,10 +27,23 @@ function Recipes() {
         const me = await authService.getMe();
         setUser(me.data);
 
-        const response = await getAllRecipes();
+        const response = await getAllRecipes({ limit: 100 });
         let data = response?.recipes || (Array.isArray(response) ? response : []);
 
-        // Mocking tags for demo purposes so filters work
+        const categoryMap = {
+          "món chính": "main",
+          "món khai vị": "appetizer",
+          "bữa sáng": "breakfast",
+          "món tráng miệng": "dessert",
+          "đồ uống": "drink",
+          "món chay": "vegetarian",
+          "healthy": "healthy",
+          "súp & canh": "soup",
+          "salad": "salad",
+          "ăn vặt": "snack"
+        };
+
+        // Normalize and categorize recipes
         data = data.map((r, index) => {
           const title = r.title.toLowerCase();
           let tags = ["Gluten-free"];
@@ -43,8 +56,34 @@ function Recipes() {
           }
           if (index % 5 === 0) tags.push("Paleo");
 
+          // Determine/normalize category
+          let cat = r.category ? r.category.toLowerCase() : "other";
+          if (categoryMap[cat]) {
+            cat = categoryMap[cat];
+          }
+
+          // Fallback parsing for 'other' or empty category based on keyword in title
+          if (cat === "other" || !cat) {
+            if (title.includes("sữa chua") || title.includes("trứng") || title.includes("bánh mì") || title.includes("cháo")) {
+              cat = "breakfast";
+            } else if (title.includes("canh") || title.includes("súp")) {
+              cat = "soup";
+            } else if (title.includes("salad") || title.includes("gỏi") || title.includes("nộm")) {
+              cat = "salad";
+            } else if (title.includes("sinh tố") || title.includes("nước ép") || title.includes("nước cốt")) {
+              cat = "drink";
+            } else if (title.includes("pudding") || title.includes("chè") || title.includes("bánh")) {
+              cat = "dessert";
+            } else if (title.includes("chay") || title.includes("đậu hũ") || title.includes("đậu phụ")) {
+              cat = "vegetarian";
+            } else if (title.includes("kho") || title.includes("xào") || title.includes("chiên") || title.includes("hấp") || title.includes("áp chảo") || title.includes("hầm") || title.includes("thịt") || title.includes("gà") || title.includes("tôm") || title.includes("cá")) {
+              cat = "main";
+            }
+          }
+
           return {
             ...r,
+            category: cat,
             difficulty: r.difficulty || (index % 3 === 0 ? "Easy" : index % 3 === 1 ? "Medium" : "Hard"),
             dietaryTags: r.dietaryTags?.length > 0 ? r.dietaryTags : tags
           };
