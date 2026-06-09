@@ -90,12 +90,14 @@
 .cooking-main-layout {
   flex: 1;
   display: grid;
-  grid-template-columns: 380px 1fr;
-  gap: 2.5rem;
-  padding: 2rem 3rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  padding: 2.5rem 3rem;
   background: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 40%, #fff7ed 100%);
   overflow-y: auto;
   width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
 /* --- LEFT COLUMN --- */
@@ -108,7 +110,7 @@
 .media-container {
   position: relative;
   width: 100%;
-  height: 240px; /* Reduced from 320px for landscape ratio */
+  height: 340px; /* Adjusted height for 50-50 layout aspect ratio */
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
