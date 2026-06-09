@@ -93,10 +93,8 @@
   grid-template-columns: 380px 1fr;
   gap: 2.5rem;
   padding: 2rem 3rem;
-  background-color: #fafafa;
+  background: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 40%, #fff7ed 100%);
   overflow-y: auto;
-  max-width: 1500px;
-  margin: 0 auto;
   width: 100%;
 }
 
@@ -160,6 +158,8 @@
 /* Nutrition Widget */
 .nutrition-widget {
   align-items: center;
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  border: 1px solid #dcfce7;
 }
 
 .nutrition-donut-container {
@@ -245,7 +245,8 @@
 
 /* Hands-free Widget */
 .hands-free-widget {
-  /* Inherits height and flex rules */
+  background: linear-gradient(135deg, #ffffff 0%, #ecfdf5 100%);
+  border: 1px solid #d1fae5;
 }
 
 .hands-free-widget .widget-header {
@@ -668,4 +669,57 @@
   .nav-buttons-container {
     gap: 1rem;
   }
+}
+
+/* --- NEXT STEP PREVIEW CARD --- */
+.next-step-preview-card {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem 2.25rem;
+  margin-top: 1.5rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.015);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  border-left: 6px solid #cbd5e1; /* Neutral grey left border */
+}
+
+.next-step-preview-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.035);
+  border-left-color: #94a3b8;
+}
+
+.next-step-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.next-step-badge {
+  background-color: #cbd5e1; /* Neutral grey background */
+  color: #475569;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.next-step-label {
+  color: #64748b;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 1.2px;
+}
+
+.next-step-instruction {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  font-weight: 600;
+  color: #475569;
+  margin: 0;
 }

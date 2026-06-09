@@ -412,6 +412,18 @@ function CookingMode({ recipe, onClose, onComplete }) {
                 </button>
               </div>
             </div>
+
+            {currentStepIndex < totalSteps - 1 && (
+              <div className="next-step-preview-card">
+                <div className="next-step-header">
+                  <span className="next-step-badge">{currentStepIndex + 2}</span>
+                  <span className="next-step-label">TIẾP THEO</span>
+                </div>
+                <p className="next-step-instruction">
+                  {recipe.steps[currentStepIndex + 1].instruction || recipe.steps[currentStepIndex + 1].text || recipe.steps[currentStepIndex + 1]}
+                </p>
+              </div>
+            )}
           </section>
         </div>
 
