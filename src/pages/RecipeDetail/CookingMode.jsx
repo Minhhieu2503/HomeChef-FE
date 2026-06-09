@@ -13,6 +13,10 @@ function CookingMode({ recipe, onClose, onComplete }) {
   const [timerSeconds, setTimerSeconds] = useState(null);
   const [timerActive, setTimerActive] = useState(false);
   const timerRef = useRef(null);
+
+  // Custom modal states to replace browser alert
+  const [activeTip, setActiveTip] = useState(null);
+  const [showTimerAlert, setShowTimerAlert] = useState(false);
   
   // Voice recognition reference
   const recognitionRef = useRef(null);
@@ -163,9 +167,9 @@ function CookingMode({ recipe, onClose, onComplete }) {
       oscillator.start();
       oscillator.stop(audioCtx.currentTime + 1); // 1 second beep
       
-      alert("⏱️ Hết giờ! Thời gian nấu đã hoàn tất.");
+      setShowTimerAlert(true);
     } catch (e) {
-      alert("⏱️ Hết giờ! Thời gian nấu đã hoàn tất.");
+      setShowTimerAlert(true);
     }
   };
 
@@ -221,7 +225,7 @@ function CookingMode({ recipe, onClose, onComplete }) {
       "Nước xốt có xu hướng cô đặc nhanh, hãy giữ lửa nhỏ liu riu."
     ];
     const randomTip = tips[Math.floor(Math.random() * tips.length)];
-    alert(`💡 Mẹo nấu ăn:\n${randomTip}`);
+    setActiveTip(randomTip);
   };
 
   const formatTime = (secs) => {
@@ -458,6 +462,38 @@ function CookingMode({ recipe, onClose, onComplete }) {
           </button>
         </div>
       </footer>
+
+      {/* TIP MODAL */}
+      {activeTip && (
+        <div className="custom-alert-overlay">
+          <div className="custom-alert-card tip-card">
+            <div className="alert-icon-wrapper tip-icon-bg">
+              <span className="alert-emoji">💡</span>
+            </div>
+            <h4 className="alert-title">Mẹo hay nhà bếp</h4>
+            <p className="alert-message">{activeTip}</p>
+            <button className="alert-close-btn tip-theme-btn" onClick={() => setActiveTip(null)}>
+              Đã hiểu
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* TIMER ALERT MODAL */}
+      {showTimerAlert && (
+        <div className="custom-alert-overlay">
+          <div className="custom-alert-card alarm-card">
+            <div className="alert-icon-wrapper alarm-icon-bg">
+              <span className="alert-emoji animate-bounce">⏱️</span>
+            </div>
+            <h4 className="alert-title">Hết giờ rồi!</h4>
+            <p className="alert-message">Thời gian nấu cho bước này đã hoàn tất. Hãy kiểm tra thức ăn nhé!</p>
+            <button className="alert-close-btn alarm-theme-btn" onClick={() => setShowTimerAlert(false)}>
+              Xong
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
