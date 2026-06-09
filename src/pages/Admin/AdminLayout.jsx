@@ -10,6 +10,7 @@ import AdminUsers from "./AdminUsers";
 import AdminRecipes from "./AdminRecipes";
 import AdminSystem from "./AdminSystem";
 import AdminPayments from "./AdminPayments";
+import AdminLogs from "./AdminLogs";
 import "./AdminLayout.css";
 
 const AdminLayout = () => {
@@ -27,6 +28,7 @@ const AdminLayout = () => {
     { path: "/admin/users", icon: <Users size={20} />, label: "Người dùng", category: "Quản lý" },
     { path: "/admin/recipes", icon: <ChefHat size={20} />, label: "Công thức", category: "Nội dung" },
     { path: "/admin/payments", icon: <CreditCard size={20} />, label: "Thanh toán", category: "Giao dịch" },
+    { path: "/admin/logs", icon: <Settings size={20} />, label: "Nhật ký", category: "Hệ thống" },
   ];
 
   // Helper to get current page label for breadcrumbs
@@ -100,6 +102,7 @@ const AdminLayout = () => {
             <Route path="users" element={<AdminUsers />} />
             <Route path="recipes" element={<AdminRecipes />} />
             <Route path="payments" element={<AdminPayments />} />
+            <Route path="logs" element={<AdminLogs />} />
           </Routes>
         </div>
       </main>
