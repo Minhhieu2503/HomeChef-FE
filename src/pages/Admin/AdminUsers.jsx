@@ -36,6 +36,21 @@ const AdminUsers = () => {
     }
   };
 
+  const toggleRole = async (userId, currentRole) => {
+    const newRole = currentRole === "admin" ? "user" : "admin";
+    const roleText = newRole === "admin" ? "Quản trị viên" : "Đầu bếp";
+    if (!window.confirm(`Bạn có chắc muốn đổi vai trò của người dùng này thành ${roleText}?`)) return;
+    
+    try {
+      const response = await api.put(`/admin/users/${userId}/role`, { role: newRole });
+      if (response.success) {
+        setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
+      }
+    } catch (err) {
+      alert("Lỗi cập nhật vai trò: " + (err.response?.data?.message || err.message));
+    }
+  };
+
   const deleteUser = async (id) => {
     if (!window.confirm("Xóa người dùng này?")) return;
     try {
@@ -103,6 +118,14 @@ const AdminUsers = () => {
                   </td>
                   <td>
                     <div className="action-btns">
+                      <button 
+                        className="btn-icon-sm" 
+                        onClick={() => toggleRole(user._id, user.role)}
+                        title={user.role === 'admin' ? 'Hạ cấp xuống Đầu bếp' : 'Nâng cấp lên Quản trị viên'}
+                        style={{ color: user.role === 'admin' ? '#ef4444' : '#10b981' }}
+                      >
+                        <Shield size={16} />
+                      </button>
                       <button 
                         className="btn-icon-sm" 
                         onClick={() => toggleStatus(user._id, user.status || 'active')}
