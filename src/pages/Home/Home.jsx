@@ -375,7 +375,7 @@ function Dashboard() {
               <span className="text-xs text-muted">Mục tiêu ngày</span>
             </div>
             
-            {user?.plan === 'free' && (
+            {!user?.isPremium && (
               <div className="premium-lock-overlay" style={{
                 position: 'absolute',
                 top: 0,

@@ -51,7 +51,7 @@ function Pantry() {
 
   const handleAnalyze = async () => {
     if (!scanImage) return;
-    if (scanType === "bill" && user?.plan === "free") {
+    if (scanType === "bill" && !user?.isPremium) {
       setIsUpgradeModalOpen(true);
       return;
     }
@@ -191,7 +191,7 @@ function Pantry() {
   };
 
   const handleGenerateAI = async () => {
-    if (user?.plan === 'free') {
+    if (!user?.isPremium) {
       setIsUpgradeModalOpen(true);
       return;
     }
@@ -696,7 +696,7 @@ function Pantry() {
                       type="button"
                       className={`scan-type-tab ${scanType === 'bill' ? 'active' : ''}`}
                       onClick={() => {
-                        if (user?.plan === 'free') {
+                        if (!user?.isPremium) {
                           setIsUpgradeModalOpen(true);
                         } else {
                           setScanType('bill');
@@ -704,7 +704,7 @@ function Pantry() {
                       }}
                       style={{ padding: '8px 16px', borderRadius: '20px', border: scanType === 'bill' ? '2px solid #4ADE80' : '1px solid #e2e8f0', background: scanType === 'bill' ? '#e8f5e9' : 'white', color: scanType === 'bill' ? '#1b5e20' : '#475569', fontWeight: 'bold', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '4px' }}
                     >
-                      🧾 Quét hóa đơn {user?.plan === 'free' && '🔒'}
+                      🧾 Quét hóa đơn {!user?.isPremium && '🔒'}
                     </button>
                   </div>
 

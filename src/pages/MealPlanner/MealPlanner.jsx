@@ -631,7 +631,7 @@ function MealPlanner() {
                       value={aiForm.dietMode}
                       onChange={e => {
                         const val = e.target.value;
-                        if (val !== 'balanced' && user?.plan === 'free') {
+                        if (val !== 'balanced' && !user?.isPremium) {
                           setIsUpgradeModalOpen(true);
                         } else {
                           setAiForm(prev => ({ ...prev, dietMode: val }));
@@ -640,9 +640,9 @@ function MealPlanner() {
                       style={{ padding: '10px 14px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none', background: 'white' }}
                     >
                       <option value="balanced">Cân bằng tự nhiên (Mặc định)</option>
-                      <option value="gym">🏋️ Gym / Tăng cơ giảm mỡ {user?.plan === 'free' && '(Premium 🔒)'}</option>
-                      <option value="keto">🥩 Keto / Lowcarb {user?.plan === 'free' && '(Premium 🔒)'}</option>
-                      <option value="clean_eating">🥗 Ăn sạch / Healthy {user?.plan === 'free' && '(Premium 🔒)'}</option>
+                      <option value="gym">🏋️ Gym / Tăng cơ giảm mỡ {!user?.isPremium && '(Premium 🔒)'}</option>
+                      <option value="keto">🥩 Keto / Lowcarb {!user?.isPremium && '(Premium 🔒)'}</option>
+                      <option value="clean_eating">🥗 Ăn sạch / Healthy {!user?.isPremium && '(Premium 🔒)'}</option>
                     </select>
                   </div>
 

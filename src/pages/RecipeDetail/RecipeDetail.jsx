@@ -145,7 +145,7 @@ function RecipeDetail() {
               type="checkbox" 
               checked={handsFree} 
               onChange={() => {
-                if (user?.plan === 'free') {
+                if (!user?.isPremium) {
                   toast.info('Chế độ Nấu rảnh tay chỉ dành cho gói Premium/Family. Đang chuyển hướng...');
                   setTimeout(() => navigate('/pricing'), 2000);
                   return;
