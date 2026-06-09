@@ -90,33 +90,38 @@
 .cooking-main-layout {
   flex: 1;
   display: grid;
-  grid-template-columns: 420px 1fr;
+  grid-template-columns: 380px 1fr;
   gap: 2.5rem;
-  padding: 2rem;
+  padding: 2rem 3rem;
   background-color: #fafafa;
   overflow-y: auto;
+  max-width: 1500px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 /* --- LEFT COLUMN --- */
 .left-column {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .media-container {
   position: relative;
   width: 100%;
-  height: 320px;
+  height: 240px; /* Reduced from 320px for landscape ratio */
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  background-color: #f1f5f9; /* Placeholder background */
 }
 
 .cooking-hero-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
 .cook-time-badge {
@@ -125,12 +130,13 @@
   right: 1rem;
   background-color: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(4px);
-  padding: 0.5rem 1rem;
+  padding: 0.4rem 0.8rem;
   border-radius: 30px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #1e293b;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.05);
 }
 
 .widgets-row {
@@ -143,27 +149,28 @@
   background-color: #ffffff;
   border-radius: 16px;
   border: 1px solid #e2e8f0;
-  padding: 1.25rem;
+  padding: 1rem; /* Sligthly reduced padding */
   box-shadow: 0 4px 12px rgba(0,0,0,0.02);
   display: flex;
   flex-direction: column;
+  height: 200px; /* Force consistent heights */
+  justify-content: space-between;
 }
 
 /* Nutrition Widget */
 .nutrition-widget {
   align-items: center;
-  justify-content: center;
 }
 
 .nutrition-donut-container {
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
   display: flex;
   justify-content: center;
 }
 
 .donut-chart-css {
-  width: 110px;
-  height: 110px;
+  width: 90px; /* Reduced from 110px */
+  height: 90px;
   border-radius: 50%;
   background: conic-gradient(
     #4ade80 0% 30%,     /* Protein */
@@ -177,8 +184,8 @@
 }
 
 .donut-center-hole {
-  width: 82px;
-  height: 82px;
+  width: 68px; /* Reduced from 82px */
+  height: 68px;
   background-color: #ffffff;
   border-radius: 50%;
   display: flex;
@@ -188,14 +195,14 @@
 }
 
 .donut-center-hole .cal-val {
-  font-size: 1.4rem;
-  font-weight: 900;
+  font-size: 1.15rem;
+  font-weight: 950;
   color: #0f172a;
   line-height: 1.1;
 }
 
 .donut-center-hole .cal-lbl {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 700;
   color: #94a3b8;
   letter-spacing: 0.5px;
@@ -205,19 +212,19 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.25rem;
 }
 
 .nut-item {
   display: flex;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: 0.72rem; /* Reduced from 0.8rem for single-line fit */
   color: #475569;
 }
 
 .nut-item .dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   margin-right: 6px;
 }
@@ -232,13 +239,13 @@
 }
 
 .nut-val {
-  font-weight: 700;
+  font-weight: 800;
   color: #1e293b;
 }
 
 /* Hands-free Widget */
 .hands-free-widget {
-  justify-content: space-between;
+  /* Inherits height and flex rules */
 }
 
 .hands-free-widget .widget-header {
@@ -246,12 +253,12 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .widget-title {
-  font-weight: 700;
-  font-size: 0.9rem;
+  font-weight: 800;
+  font-size: 0.85rem;
   color: #475569;
 }
 
@@ -259,8 +266,8 @@
 .mint-switch {
   position: relative;
   display: inline-block;
-  width: 44px;
-  height: 24px;
+  width: 40px;
+  height: 22px;
 }
 
 .mint-switch input {
@@ -278,14 +285,14 @@
   bottom: 0;
   background-color: #cbd5e1;
   transition: .3s;
-  border-radius: 24px;
+  border-radius: 22px;
 }
 
 .mint-slider:before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
+  height: 16px;
+  width: 16px;
   left: 3px;
   bottom: 3px;
   background-color: white;
@@ -299,20 +306,21 @@
 }
 
 .mint-switch input:checked + .mint-slider:before {
-  transform: translateX(20px);
+  transform: translateX(18px);
 }
 
 .mic-container-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
+  gap: 0.4rem;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .mic-circle {
-  width: 64px;
-  height: 64px;
+  width: 54px; /* Reduced from 64px */
+  height: 54px;
   border-radius: 50%;
   background-color: #e2e8f0;
   display: flex;
@@ -332,7 +340,7 @@
     box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 12px rgba(74, 222, 128, 0);
+    box-shadow: 0 0 0 10px rgba(74, 222, 128, 0);
   }
   100% {
     box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
@@ -344,13 +352,13 @@
 }
 
 .status-main {
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 800;
   margin: 0;
 }
 
 .status-sub {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   color: #94a3b8;
   margin: 2px 0 0 0;
   font-weight: 500;
@@ -364,10 +372,10 @@
 }
 
 .section-title {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: #0f172a;
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -384,13 +392,14 @@
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
-  padding: 1rem;
+  padding: 1rem 1.25rem;
   display: flex;
   align-items: center;
   gap: 1rem;
   cursor: pointer;
   transition: all 0.2s;
   user-select: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.01);
 }
 
 .ingredient-checkbox-card:hover {
@@ -431,8 +440,8 @@
 }
 
 .ing-name-txt {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 1.05rem; /* Increased size for premium readability */
+  font-weight: 700;
   color: #1e293b;
 }
 
@@ -442,9 +451,9 @@
 }
 
 .ing-qty-txt {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #64748b;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 /* Active Step Card */
@@ -455,7 +464,7 @@
   border-right: 1px solid #e2e8f0;
   border-bottom: 1px solid #e2e8f0;
   border-radius: 16px;
-  padding: 2rem;
+  padding: 2.25rem;
   box-shadow: 0 10px 30px rgba(0,0,0,0.03);
 }
 
@@ -488,12 +497,15 @@
 
 .step-text-container {
   margin-bottom: 2rem;
+  min-height: 110px; /* Ensures vertical balance even with short steps */
+  display: flex;
+  align-items: center;
 }
 
 .step-instruction-large {
-  font-size: 1.95rem; /* Extra Large Typography */
+  font-size: 2.15rem; /* Large High Legibility font */
   line-height: 1.45;
-  font-weight: 700;
+  font-weight: 750;
   color: #0f172a;
   margin: 0;
   letter-spacing: -0.5px;
@@ -650,7 +662,7 @@
   }
   
   .step-instruction-large {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
   }
   
   .nav-buttons-container {

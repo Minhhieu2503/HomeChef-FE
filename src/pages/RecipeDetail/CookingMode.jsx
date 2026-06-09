@@ -17,6 +17,19 @@ function CookingMode({ recipe, onClose, onComplete }) {
   // Voice recognition reference
   const recognitionRef = useRef(null);
 
+  // Helper to format image URLs
+  const getImageUrl = (url) => {
+    if (!url) return "https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800";
+    if (url.startsWith("http")) return url;
+    const apiUrl = import.meta.env.VITE_API_URL || "https://homechef-be-earg.onrender.com/api";
+    const baseUrl = apiUrl.replace("/api", "");
+    return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+  };
+
+  const handleImageError = (e) => {
+    e.target.src = "https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=800";
+  };
+
   const totalSteps = recipe.steps ? recipe.steps.length : 0;
   const currentStep = recipe.steps ? recipe.steps[currentStepIndex] : null;
   const stepText = currentStep ? (currentStep.instruction || currentStep.text || currentStep) : "";
@@ -249,9 +262,10 @@ function CookingMode({ recipe, onClose, onComplete }) {
           {/* Main Visual Image */}
           <div className="media-container">
             <img 
-              src={(currentStep && currentStep.image) || recipe.image} 
+              src={getImageUrl((currentStep && currentStep.image) || recipe.image)} 
               alt={recipe.title} 
               className="cooking-hero-img" 
+              onError={handleImageError}
             />
             <div className="cook-time-badge">
               ⏱ {recipe.cookTime || 45} phút
