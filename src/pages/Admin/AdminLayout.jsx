@@ -3,7 +3,7 @@ import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom"
 import { authUtils } from "../../utils/authUtils";
 import { 
   LogOut, LayoutDashboard, Users, ChefHat, Settings, 
-  CreditCard, Bell, ChevronRight, User as UserIcon
+  CreditCard, Bell, ChevronRight, User as UserIcon, MessageSquare
 } from "lucide-react";
 import AdminDashboard from "./AdminDashboard";
 import AdminUsers from "./AdminUsers";
@@ -11,6 +11,7 @@ import AdminRecipes from "./AdminRecipes";
 import AdminSystem from "./AdminSystem";
 import AdminPayments from "./AdminPayments";
 import AdminLogs from "./AdminLogs";
+import AdminFeedback from "./AdminFeedback";
 import "./AdminLayout.css";
 
 const AdminLayout = () => {
@@ -28,6 +29,7 @@ const AdminLayout = () => {
     { path: "/admin/users", icon: <Users size={20} />, label: "Người dùng", category: "Quản lý" },
     { path: "/admin/recipes", icon: <ChefHat size={20} />, label: "Công thức", category: "Nội dung" },
     { path: "/admin/payments", icon: <CreditCard size={20} />, label: "Thanh toán", category: "Giao dịch" },
+    { path: "/admin/feedbacks", icon: <MessageSquare size={20} />, label: "Ý kiến", category: "Góp ý" },
     { path: "/admin/logs", icon: <Settings size={20} />, label: "Nhật ký", category: "Hệ thống" },
   ];
 
@@ -102,6 +104,7 @@ const AdminLayout = () => {
             <Route path="users" element={<AdminUsers />} />
             <Route path="recipes" element={<AdminRecipes />} />
             <Route path="payments" element={<AdminPayments />} />
+            <Route path="feedbacks" element={<AdminFeedback />} />
             <Route path="logs" element={<AdminLogs />} />
           </Routes>
         </div>
