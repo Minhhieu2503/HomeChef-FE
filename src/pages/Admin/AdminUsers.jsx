@@ -17,7 +17,7 @@ const AdminUsers = () => {
   const fetchUsers = async (pageNum) => {
     try {
       setLoading(true);
-      const response = await api.get(`/admin/users?page=${pageNum}&limit=10`);
+      const response = await api.get(`/admin/users?page=${pageNum}&limit=8`);
       if (response.success) {
         setUsers(response.data);
         setTotalPages(response.pagination.pages || 1);
@@ -46,7 +46,7 @@ const AdminUsers = () => {
     const newRole = currentRole === "admin" ? "user" : "admin";
     const roleText = newRole === "admin" ? "Quản trị viên" : "Đầu bếp";
     if (!window.confirm(`Bạn có chắc muốn đổi vai trò của người dùng này thành ${roleText}?`)) return;
-    
+
     try {
       const response = await api.put(`/admin/users/${userId}/role`, { role: newRole });
       if (response.success) {
@@ -128,23 +128,23 @@ const AdminUsers = () => {
                   </td>
                   <td>
                     <div className="action-btns">
-                      <button 
-                        className="btn-icon-sm" 
+                      <button
+                        className="btn-icon-sm"
                         onClick={() => toggleRole(user._id, user.role)}
                         title={user.role === 'admin' ? 'Hạ cấp xuống Đầu bếp' : 'Nâng cấp lên Quản trị viên'}
                         style={{ color: user.role === 'admin' ? '#ef4444' : '#10b981' }}
                       >
                         <Shield size={16} />
                       </button>
-                      <button 
-                        className="btn-icon-sm" 
+                      <button
+                        className="btn-icon-sm"
                         onClick={() => toggleStatus(user._id, user.status || 'active')}
                         title={user.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa'}
                       >
                         {user.status === 'locked' ? <Unlock size={16} /> : <Lock size={16} />}
                       </button>
-                      <button 
-                        className="btn-icon-sm danger" 
+                      <button
+                        className="btn-icon-sm danger"
                         onClick={() => deleteUser(user._id)}
                         title="Xóa người dùng"
                       >
