@@ -22,3 +22,6 @@ createRoot(document.getElementById('root')).render(
     </GoogleOAuthProvider>
   </StrictMode>,
 )
+
+// Trigger redeploy on Vercel
+
