@@ -1,21 +1,27 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api";
-import { User, Shield, Lock, Unlock, Trash2, Mail } from "lucide-react";
+import { User, Shield, Lock, Unlock, Trash2, Mail, ChevronLeft, ChevronRight } from "lucide-react";
 import "./AdminLayout.css";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    fetchUsers(page);
+  }, [page]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (pageNum) => {
     try {
-      const response = await api.get("/admin/users");
+      setLoading(true);
+      const response = await api.get(`/admin/users?page=${pageNum}&limit=10`);
       if (response.success) {
         setUsers(response.data);
+        setTotalPages(response.pagination.pages || 1);
+        setTotalUsers(response.pagination.total || 0);
       }
     } catch (err) {
       console.error("Error fetching users:", err);
@@ -55,7 +61,11 @@ const AdminUsers = () => {
     if (!window.confirm("Xóa người dùng này?")) return;
     try {
       await api.delete(`/admin/users/${id}`);
-      setUsers(users.filter(u => u._id !== id));
+      if (users.length === 1 && page > 1) {
+        setPage(prev => prev - 1);
+      } else {
+        fetchUsers(page);
+      }
     } catch (err) {
       alert("Lỗi khi xóa");
     }
@@ -152,6 +162,51 @@ const AdminUsers = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem', padding: '0 1rem' }}>
+          <span style={{ fontSize: '0.85rem', color: '#64748b' }}>
+            Hiển thị trang <b>{page}</b> / <b>{totalPages}</b> (Tổng <b>{totalUsers}</b> người dùng)
+          </span>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              onClick={() => setPage(prev => Math.max(1, prev - 1))}
+              disabled={page === 1}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid #cbd5e1',
+                background: page === 1 ? '#f1f5f9' : 'white',
+                color: page === 1 ? '#cbd5e1' : '#475569',
+                cursor: page === 1 ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              <ChevronLeft size={16} /> Trước
+            </button>
+            <button
+              onClick={() => setPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={page === totalPages}
+              style={{
+                padding: '8px 12px',
+                borderRadius: '8px',
+                border: '1px solid #cbd5e1',
+                background: page === totalPages ? '#f1f5f9' : 'white',
+                color: page === totalPages ? '#cbd5e1' : '#475569',
+                cursor: page === totalPages ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+            >
+              Sau <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
