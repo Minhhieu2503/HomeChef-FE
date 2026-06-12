@@ -111,10 +111,11 @@ function AppContent({ isNative }) {
   // Determine if feedback gate should be shown
   const isUser = user && user.role === "user";
   const hasNotGivenFeedback = user && !user.hasGivenFeedback;
+  const isNewlyRegistered = sessionStorage.getItem("justRegistered") === "true";
   const metMealsCondition = user && user.completedMealsCount >= 1;
   const metViewsCondition = recipeViews >= 3;
 
-  const showFeedbackGate = isUser && hasNotGivenFeedback && (metMealsCondition || metViewsCondition);
+  const showFeedbackGate = isUser && hasNotGivenFeedback && (!isNewlyRegistered || metMealsCondition || metViewsCondition);
 
   const handleUnlock = (updatedUser) => {
     setUser(updatedUser);

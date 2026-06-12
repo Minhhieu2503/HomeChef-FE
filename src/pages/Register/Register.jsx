@@ -24,6 +24,7 @@ function Register() {
         authUtils.setToken(response.data.token);
         authUtils.setUser(response.data.user);
         localStorage.setItem("hasSeenOnboarding", "true");
+        sessionStorage.setItem("justRegistered", "true");
         toast.success("Chào mừng bạn gia nhập HomeChef!");
         navigate("/");
       }

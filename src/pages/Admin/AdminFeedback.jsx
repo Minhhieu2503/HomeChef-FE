@@ -259,12 +259,32 @@ const AdminFeedback = () => {
 
                 <div className="card-middle-section">
                   <div className="stars-and-time">
-                    {renderStars(item.rating)}
+                    <div className="admin-overall-rating">
+                      <span className="overall-label">Điểm chung:</span>
+                      {renderStars(item.rating)}
+                    </div>
                     <span className="time-badge">
                       <Calendar size={12} />
                       {formatDate(item.createdAt)}
                     </span>
                   </div>
+
+                  {/* Detailed Scores */}
+                  <div className="admin-detailed-scores-display">
+                    <div className="score-item">
+                      <span>Giao diện:</span>
+                      {renderStars(item.ratingUI || item.rating)}
+                    </div>
+                    <div className="score-item">
+                      <span>Tốc độ:</span>
+                      {renderStars(item.ratingSpeed || item.rating)}
+                    </div>
+                    <div className="score-item">
+                      <span>Nội dung:</span>
+                      {renderStars(item.ratingContent || item.rating)}
+                    </div>
+                  </div>
+
                   <p className="comment-text">"{item.comment}"</p>
                 </div>
 
