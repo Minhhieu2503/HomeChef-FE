@@ -11,8 +11,12 @@ const AdminLogs = () => {
   const [totalLogs, setTotalLogs] = useState(0);
   const [stats, setStats] = useState({
     uniqueIps: 0,
-    authVisits: 0,
-    guestVisits: 0
+    activeUsers: 0,
+    uniqueGuests: 0,
+    guestClicks: 0,
+    authClicks: 0,
+    totalRegisteredUsers: 0,
+    totalLogs: 0
   });
 
   useEffect(() => {
@@ -27,26 +31,15 @@ const AdminLogs = () => {
         setLogs(response.data);
         setTotalPages(response.pagination.pages || 1);
         setTotalLogs(response.pagination.total || 0);
-        calculateStats(response.data);
+        if (response.stats) {
+          setStats(response.stats);
+        }
       }
     } catch (err) {
       console.error("Error fetching logs:", err);
     } finally {
       setLoading(false);
     }
-  };
-
-  const calculateStats = (data) => {
-    // Generate simple local statistics from current batch
-    const uniqueIps = new Set(data.map(log => log.ipAddress)).size;
-    const authVisits = data.filter(log => log.user).length;
-    const guestVisits = data.length - authVisits;
-
-    setStats({
-      uniqueIps,
-      authVisits,
-      guestVisits
-    });
   };
 
   const parseUserAgent = (ua) => {
@@ -94,32 +87,39 @@ const AdminLogs = () => {
       </header>
 
       {/* Access Stats Grid */}
-      <div className="stats-grid-mini" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
+      <div className="stats-grid-mini" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem', marginBottom: '1.5rem' }}>
         <div className="stat-card-mini" style={{ padding: '1.25rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#64748b', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Tổng lượt truy cập API</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>TỔNG LƯỢT TRUY CẬP API</span>
             <Activity size={18} className="text-indigo-500" />
           </div>
           <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>{totalLogs.toLocaleString()}</div>
-        </div>
-
-        <div className="stat-card-mini" style={{ padding: '1.25rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#64748b', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Thiết bị/IP duy nhất (Trang hiện tại)</span>
-            <Globe size={18} className="text-cyan-500" />
+          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.4rem', display: 'flex', gap: '8px' }}>
+            <span className="text-indigo-600 font-semibold">{stats.authClicks} click thành viên</span>
+            <span style={{ color: '#cbd5e1' }}>|</span>
+            <span className="text-amber-600 font-semibold">{stats.guestClicks} click khách</span>
           </div>
-          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#0f172a' }}>{stats.uniqueIps}</div>
         </div>
 
         <div className="stat-card-mini" style={{ padding: '1.25rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#64748b', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Tỷ lệ Đăng nhập / Khách</span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>THÀNH VIÊN ĐÃ SỬ DỤNG APP</span>
             <User size={18} className="text-emerald-500" />
           </div>
-          <div style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '0.4rem' }}>
-            <span className="text-emerald-600">{stats.authVisits} Đã ĐN</span>
-            <span style={{ color: '#cbd5e1' }}>/</span>
-            <span className="text-slate-500">{stats.guestVisits} Khách</span>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#10b981' }}>{stats.activeUsers} <span style={{ fontSize: '1rem', fontWeight: 500, color: '#64748b' }}>người dùng</span></div>
+          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.4rem' }}>
+            Tổng số đăng ký hệ thống: <b className="text-slate-800">{stats.totalRegisteredUsers}</b> tài khoản
+          </div>
+        </div>
+
+        <div className="stat-card-mini" style={{ padding: '1.25rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#64748b', marginBottom: '0.5rem' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>KHÁCH VÃNG LAI TRUY CẬP (THEO IP)</span>
+            <Globe size={18} className="text-amber-500" />
+          </div>
+          <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#f59e0b' }}>{stats.uniqueGuests} <span style={{ fontSize: '1rem', fontWeight: 500, color: '#64748b' }}>thiết bị</span></div>
+          <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.4rem' }}>
+            Tổng số click / lượt tương tác của khách: <b className="text-amber-600">{stats.guestClicks}</b> lần
           </div>
         </div>
       </div>
