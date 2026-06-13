@@ -3,7 +3,7 @@ import { feedbackService } from "../../services/feedback.service";
 import { useToast } from "../../context/ToastContext";
 import { 
   Star, MessageSquare, AlertTriangle, Lightbulb, 
-  HelpCircle, CheckCircle, Clock, Filter, User, Calendar 
+  HelpCircle, CheckCircle, Clock, Filter, User, Calendar, Zap
 } from "lucide-react";
 import "./AdminFeedback.css";
 
@@ -23,7 +23,9 @@ const AdminFeedback = () => {
     total: 0,
     averageRating: 0,
     pending: 0,
-    resolved: 0
+    resolved: 0,
+    upgradeYes: 0,
+    upgradeNo: 0
   });
 
   const fetchFeedbacks = async () => {
@@ -46,8 +48,10 @@ const AdminFeedback = () => {
         const avg = total > 0 ? (sum / total).toFixed(1) : 0;
         const pending = list.filter(f => f.status === "pending").length;
         const resolved = list.filter(f => f.status === "resolved").length;
+        const upgradeYes = list.filter(f => f.agreeUpgradePremium === "yes").length;
+        const upgradeNo = list.filter(f => f.agreeUpgradePremium === "no").length;
 
-        setStats({ total, averageRating: avg, pending, resolved });
+        setStats({ total, averageRating: avg, pending, resolved, upgradeYes, upgradeNo });
       }
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || "Tải danh sách góp ý thất bại.");
@@ -74,7 +78,9 @@ const AdminFeedback = () => {
           const updatedList = feedbacks.map(f => f._id === id ? { ...f, status: newStatus } : f);
           const pending = updatedList.filter(f => f.status === "pending").length;
           const resolved = updatedList.filter(f => f.status === "resolved").length;
-          return { ...prev, pending, resolved };
+          const upgradeYes = updatedList.filter(f => f.agreeUpgradePremium === "yes").length;
+          const upgradeNo = updatedList.filter(f => f.agreeUpgradePremium === "no").length;
+          return { ...prev, pending, resolved, upgradeYes, upgradeNo };
         });
       }
     } catch (err) {
@@ -174,6 +180,21 @@ const AdminFeedback = () => {
             <span className="label">Đánh giá trung bình</span>
             <div className="value-row">
               <span className="value">{stats.averageRating} ⭐</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="stat-card-pro">
+          <div className="icon-box premium-stat">
+            <Zap size={24} />
+          </div>
+          <div className="stat-info">
+            <span className="label">Muốn nâng cấp Premium</span>
+            <div className="value-row">
+              <span className="value text-success">{stats.upgradeYes} Có</span>
+              <span className="subvalue" style={{ fontSize: "0.9rem", color: "#64748b", marginLeft: "0.35rem" }}>
+                / {stats.upgradeNo} Không
+              </span>
             </div>
           </div>
         </div>
