@@ -285,6 +285,15 @@ const AdminFeedback = () => {
                     </div>
                   </div>
 
+                  {item.agreeUpgradePremium && (
+                    <div className="admin-upgrade-preference-row">
+                      <span className="upgrade-pref-label">Nâng cấp Premium sau dùng thử:</span>
+                      <span className={`upgrade-pref-val ${item.agreeUpgradePremium}`}>
+                        {item.agreeUpgradePremium === "yes" ? "👍 Có" : "👎 Không"}
+                      </span>
+                    </div>
+                  )}
+
                   <p className="comment-text">"{item.comment}"</p>
                 </div>
 

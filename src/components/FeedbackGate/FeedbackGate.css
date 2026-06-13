@@ -265,6 +265,11 @@
   .feedback-gate-header h2 {
     font-size: 1.4rem;
   }
+
+  .premium-upgrade-options {
+    grid-template-columns: 1fr !important;
+    gap: 0.5rem !important;
+  }
 }
 
 /* Detailed ratings section */
@@ -326,5 +331,48 @@
 
 .star-btn-small.filled svg {
   fill: var(--color-primary, #4ADE80);
+}
+
+/* Premium Upgrade Options Style */
+.premium-upgrade-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.upgrade-option-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.8rem;
+  background: var(--color-border-light, #f8fafc);
+  border: 1.5px solid var(--color-border, #e2e8f0);
+  border-radius: var(--radius-md, 12px);
+  color: var(--color-text-secondary, #64748b);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition, 0.2s);
+}
+
+.upgrade-option-btn:hover {
+  background: var(--color-border, #cbd5e1);
+  color: var(--color-text, #0f172a);
+}
+
+.upgrade-option-btn.active.yes {
+  background: #f0fdf4;
+  border-color: #22c55e;
+  color: #15803d;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+}
+
+.upgrade-option-btn.active.no {
+  background: #fef2f2;
+  border-color: #ef4444;
+  color: #b91c1c;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
 }
 

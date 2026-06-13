@@ -18,6 +18,7 @@ const FeedbackGate = ({ user, onUnlock }) => {
 
   const [type, setType] = useState("general");
   const [comment, setComment] = useState("");
+  const [agreeUpgradePremium, setAgreeUpgradePremium] = useState("");
   const [loading, setLoading] = useState(false);
 
   const feedbackTypes = [
@@ -40,6 +41,10 @@ const FeedbackGate = ({ user, onUnlock }) => {
       toast.error("Vui lòng đánh giá đầy đủ cả 3 tiêu chí của ứng dụng.");
       return;
     }
+    if (!agreeUpgradePremium) {
+      toast.error("Vui lòng trả lời câu hỏi khảo sát nâng cấp Premium.");
+      return;
+    }
     if (!comment.trim()) {
       toast.error("Vui lòng nhập nội dung góp ý chi tiết.");
       return;
@@ -52,7 +57,8 @@ const FeedbackGate = ({ user, onUnlock }) => {
         ratingUI, 
         ratingSpeed, 
         ratingContent, 
-        comment 
+        comment,
+        agreeUpgradePremium
       });
       
       if (res.success) {
@@ -163,12 +169,33 @@ const FeedbackGate = ({ user, onUnlock }) => {
             />
           </div>
 
+          {/* Premium Upgrade Survey */}
+          <div className="feedback-form-group">
+            <label className="group-label">Bạn có đồng ý nâng cấp premium sau khi dùng thử không?</label>
+            <div className="premium-upgrade-options">
+              <button
+                type="button"
+                className={`upgrade-option-btn yes ${agreeUpgradePremium === "yes" ? "active" : ""}`}
+                onClick={() => setAgreeUpgradePremium("yes")}
+              >
+                👍 Đồng ý nâng cấp
+              </button>
+              <button
+                type="button"
+                className={`upgrade-option-btn no ${agreeUpgradePremium === "no" ? "active" : ""}`}
+                onClick={() => setAgreeUpgradePremium("no")}
+              >
+                👎 Không, cảm ơn
+              </button>
+            </div>
+          </div>
+
           {/* Actions */}
           <div className="feedback-actions">
             <button
               type="submit"
               className="btn-feedback-submit"
-              disabled={loading || ratingUI === 0 || ratingSpeed === 0 || ratingContent === 0 || !comment.trim()}
+              disabled={loading || ratingUI === 0 || ratingSpeed === 0 || ratingContent === 0 || !comment.trim() || !agreeUpgradePremium}
             >
               {loading ? (
                 "Đang gửi phản hồi..."
