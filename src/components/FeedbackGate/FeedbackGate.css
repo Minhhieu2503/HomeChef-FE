@@ -21,7 +21,8 @@
               0 0 0 1px rgba(74, 222, 128, 0.1);
   width: 100%;
   max-width: 520px;
-  overflow: hidden;
+  overflow-y: auto;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
   padding: 2.25rem;
@@ -255,6 +256,7 @@
 @media (max-width: 480px) {
   .feedback-gate-card {
     padding: 1.5rem;
+    max-height: 95vh;
   }
   
   .type-chips {
